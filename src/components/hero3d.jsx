@@ -19,8 +19,8 @@ export default function Hero3D() {
 			<div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent to-black/70" />
 			<div className="absolute inset-0 flex items-center justify-center">
 				<div className="text-center px-4">
-					<h1 className="text-4xl font-bold">Your Name</h1>
-					<p className="opacity-80">React • Three.js • Data/ML</p>
+					<h1 className="text-4xl font-bold">Baatyrbek</h1>
+					<p className="opacity-80">SoftDev • WebDev • Data/ML</p>
 				</div>
 			</div>
 		</div>
