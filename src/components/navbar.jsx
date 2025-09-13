@@ -1,12 +1,79 @@
+import { useState } from 'react'
+
+const navItems = [
+	{ href: '#about', label: 'About' },
+	{ href: '#projects', label: 'Projects' },
+	{ href: '#contact', label: 'Contact' },
+]
+
 export default function Navbar() {
+	const [open, setOpen] = useState(false)
+
 	return (
-		<nav className="max-w-5xl mx-auto p-4 flex items-center justify-between">
-			<span className="font-semibold">My Portfolio</span>
-			<div className="space-x-4 text-sm">
-				<a href="#about" className="opacity-80 hover:opacity-100">About</a>
-				<a href="#projects" className="opacity-80 hover:opacity-100">Projects</a>
-				<a href="#contact" className="opacity-80 hover:opacity-100">Contact</a>
+		<header className="sticky top-0 z-50 w-full bg-black/60 backdrop-blur">
+			<nav className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+				<a href="#" className="font-bold">Render & Resume</a>
+
+				{/* Desktop links */}
+				<div className="hidden md:flex items-center gap-6 text-sm">
+					{navItems.map(i => (
+						<a key={i.href} href={i.href} className="opacity-80 hover:opacity-100">
+							{i.label}
+						</a>
+					))}
+				</div>
+
+				{/* Burger (mobile only) */}
+				<button
+					type="button"
+					className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg border border-white/15 hover:bg-white/10"
+					onClick={() => setOpen(v => !v)}
+					aria-label="Toggle menu"
+					aria-expanded={open}
+				>
+					{/* Icon: three lines / X */}
+					<div className="relative block w-5 h-4">
+						<span
+							className={
+								"left-0 top-0 block h-0.5 w-5 bg-current transition-transform duration-300 " +
+								(open ? "translate-y-1.5 rotate-45" : "")
+							}
+						/>
+						<span
+							className={
+								"absolute left-0 top-1/2 -translate-y-1/2 block h-0.5 w-5 bg-current transition-opacity duration-300 " +
+								(open ? "opacity-0" : "opacity-100")
+							}
+						/>
+						<span
+							className={
+								"absolute left-0 bottom-0 block h-0.5 w-5 bg-current transition-transform duration-300 " +
+								(open ? "-translate-y-2 -rotate-45" : "")
+							}
+						/>
+					</div>
+				</button>
+			</nav>
+
+			{/* Mobile panel */}
+			<div
+				className={`md:hidden transition-[max-height,opacity] duration-300 overflow-hidden ${
+					open ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+				}`}
+			>
+				<div className="px-6 pb-4 flex flex-col gap-3 text-sm bg-black/80">
+					{navItems.map(i => (
+						<a
+							key={i.href}
+							href={i.href}
+							className="py-2 border-b border-white/10 last:border-none opacity-90 hover:opacity-100"
+							onClick={() => setOpen(false)}
+						>
+							{i.label}
+						</a>
+					))}
+				</div>
 			</div>
-		</nav>
+		</header>
 	)
 }
