@@ -1,18 +1,17 @@
 // tabs indentation
 import ShapeCanvas from '../components/techbadge.jsx'
 
-// List of icons (add as many as you want)
 const techIcons = [
 	{ src: 'public/icons/reactjs.png', scale: 0.9 },
 	{ src: 'public/icons/threejs.svg', scale: 0.9 },
-	{ src: 'public/icons/tailwind.png',	scale: 0.85 },
+	{ src: 'public/icons/tailwind.png', scale: 0.85 },
 	{ src: 'public/icons/docker.png', scale: 0.9 },
 	{ src: 'public/icons/nodejs.png', scale: 0.9 },
 	{ src: 'public/icons/git.png', scale: 0.85 },
 	{ src: 'public/icons/html.png', scale: 0.85 },
 	{ src: 'public/icons/css.png', scale: 0.85 },
 	{ src: 'public/icons/javascript.png', scale: 0.85 },
-
+	{ src: 'public/icons/python.png', scale: 0.85 },
 ]
 
 export default function TechStack() {
@@ -30,5 +29,3 @@ export default function TechStack() {
 		</section>
 	)
 }
-
-
