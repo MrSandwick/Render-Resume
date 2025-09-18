@@ -1,37 +1,41 @@
+// tabs indentation
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { HashLink } from 'react-router-hash-link'
 
 const navItems = [
-	{ href: '#about', label: 'About' },
-	{ href: '#projects', label: 'Projects' },
-	{ href: '#contact', label: 'Contact' },
+	{ to: '/', label: 'About' },
+	{ to: '/projects', label: 'Projects' },
+	{ to: '/tech', label: 'Stack' },
+	{ to: '/#contact', label: 'Contact' },
+
 ]
 
 export default function Navbar() {
 	const [open, setOpen] = useState(false)
 
 	return (
-		<header className="sticky top-0 z-50 w-full bg-black/60 backdrop-blur">
+		<header className="sticky top-0 z-50 w-full bg-black/60 backdrop-blur text-white">
 			<nav className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-				<a href="#" className="font-bold">Render & Resume</a>
+				<HashLink to="/" className="font-bold">Render & Resume</HashLink>
 
 				{/* Desktop links */}
 				<div className="hidden md:flex items-center gap-6 text-sm">
 					{navItems.map(i => (
-						<a key={i.href} href={i.href} className="opacity-80 hover:opacity-100">
+						<HashLink key={i.label} to={i.to} className="opacity-80 hover:opacity-100">
 							{i.label}
-						</a>
+						</HashLink>
 					))}
 				</div>
 
 				{/* Burger (mobile only) */}
 				<button
 					type="button"
-					className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg border border-white/15 hover:bg-white/10"
+					className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg border border-white/15 hover:bg-white/10 text-white"
 					onClick={() => setOpen(v => !v)}
 					aria-label="Toggle menu"
 					aria-expanded={open}
 				>
-					{/* Icon: three lines / X */}
 					<div className="relative block w-5 h-4">
 						<span
 							className={
@@ -63,14 +67,14 @@ export default function Navbar() {
 			>
 				<div className="px-6 pb-4 flex flex-col gap-3 text-sm bg-black/80">
 					{navItems.map(i => (
-						<a
-							key={i.href}
-							href={i.href}
+						<Link
+							key={i.label}
+							to={i.to}
 							className="py-2 border-b border-white/10 last:border-none opacity-90 hover:opacity-100"
 							onClick={() => setOpen(false)}
 						>
 							{i.label}
-						</a>
+						</Link>
 					))}
 				</div>
 			</div>

@@ -5,7 +5,7 @@ import Knot from './knot.jsx'
 
 export default function Hero3D() {
 	return (
-		<div className="h-[60vh] relative">
+		<div id="hero" className="h-[60vh] relative">
 			<Canvas camera={{ position: [0, 1.2, 4], fov: 55 }}>
 				<ambientLight intensity={0.6} />
 				<directionalLight position={[2, 4, 2]} intensity={1.1} />

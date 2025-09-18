@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HashLink } from 'react-router-hash-link';
 import App from './App.jsx'
 import TechPage from './pages/techdetails.jsx'
 import './index.css'
