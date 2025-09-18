@@ -17,12 +17,18 @@ function SpinBall({ color = '#ffffff', icon, decalScale = 0.9 }) {
 		tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping
 	}, [tex])
 
+	// random factors: only phase + amplitude, speed is fixed
+	const phaseX = useRef(Math.random() * Math.PI * 2)   // random start angle
+	const phaseY = useRef(Math.random() * Math.PI * 2)
+	const ampX = useRef(0.1 + Math.random() * 0.15)      // random amplitude
+	const ampY = useRef(0.1 + Math.random() * 0.15)
+
 	useFrame((state) => {
 		if (!ref.current) return
 		const t = state.clock.getElapsedTime()
-		// wiggle angles in radians (here ±0.2 rad ≈ ±11°)
-		ref.current.rotation.x = Math.sin(t * 1.5) * 0.2
-		ref.current.rotation.y = Math.sin(t * 1.2) * 0.2
+		const speed = 1.5 // same for all balls
+		ref.current.rotation.x = Math.sin(t * speed + phaseX.current) * ampX.current
+		ref.current.rotation.y = Math.sin(t * speed + phaseY.current) * ampY.current
 	})
 
 	return (
