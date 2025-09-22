@@ -3,7 +3,7 @@ import Hero3D from './components/hero3d.jsx'
 import About from './sections/about.jsx'
 import Projects from './sections/projects.jsx'
 import Contact from './sections/contact.jsx'
-import TechStack from './sections/techStack.jsx'
+import TechStack from './sections/techstack.jsx'
 
 export default function App() {
 	return (
