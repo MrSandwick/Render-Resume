@@ -5,25 +5,48 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 	const containerRef = useRef(null)
 	const cooldown = useRef(0)
 
+	// Compute a safe wrapped index for rendering, regardless of parent bounds
+	const len = Array.isArray(slides) ? slides.length : 0
+	const safeIndex = len > 0 ? ((step % len) + len) % len : 0
+
 	useEffect(() => {
 		const el = containerRef.current
-		if (!el) return
+		if (!el || !len) return
 
 		const onWheel = (e) => {
 			e.preventDefault()
 			const t = performance.now()
 			if (t < cooldown.current) return
+
+			// direction of scroll: +1 forward, -1 backward
 			const dir = Math.sign(e.deltaY)
-			if (dir > 0) onWheelStep(1)
-			else if (dir < 0) onWheelStep(-1)
-			cooldown.current = t + 150
+
+			// Infinite wrap deltas:
+			// - When at the last slide and scrolling forward, jump to first with delta = -(len-1)
+			// - When at the first slide and scrolling backward, jump to last with delta = +(len-1)
+			// - Otherwise, move by ±1 as usual
+			if (dir !== 0) {
+				const atFirst = step <= 0
+				const atLast = step >= len - 1
+
+				let delta = 0
+				if (dir > 0) {
+					delta = atLast ? -(len - 1) : 1
+				} else {
+					delta = atFirst ? (len - 1) : -1
+				}
+
+				onWheelStep(delta)
+				cooldown.current = t + 150
+			}
 		}
 
 		el.addEventListener('wheel', onWheel, { passive: false })
 		return () => el.removeEventListener('wheel', onWheel)
-	}, [onWheelStep])
+		// Depend on step/len to always compute correct wrap behavior at edges
+	}, [onWheelStep, step, len])
 
-	const slide = slides?.[step]
+	const slide = len ? slides[safeIndex] : null
 
 	// graceful fallback if old shape `{ body }` is passed
 	const description = slide?.description ?? slide?.body ?? ''
@@ -35,14 +58,14 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 		<div ref={containerRef} className="pointer-events-auto absolute inset-0 grid place-items-center select-none">
 			<div className="w-full max-w-3xl px-6">
 				<div className="flex items-center justify-between text-xs uppercase tracking-widest opacity-70 mb-3">
-					<span>Step {step + 1} / {slides.length}</span>
-					<span>Scroll to navigate</span>
+					<span className='font-semibold'>Step {len ? safeIndex + 1 : 0} / {len}</span>
+					<span className='font-semibold'>Scroll to navigate</span>
 				</div>
 
 				<AnimatePresence mode="popLayout">
 					{arrived && slide && (
 						<motion.div
-							key={slide.id ?? step}
+							key={slide.id ?? safeIndex}
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: -20 }}
