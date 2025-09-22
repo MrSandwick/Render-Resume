@@ -1,6 +1,6 @@
-import Navbar from '../components/navbar.jsx'
-import Techback from '../components/techback.jsx'
-import Techcard from '../components/techcard.jsx'
+import Navbar from '../components/home/navbar.jsx'
+import Techback from '../components/tech/techback.jsx'
+import Techcard from '../components/tech/techcard.jsx'
 
 export default function TechPage() {
 	return (

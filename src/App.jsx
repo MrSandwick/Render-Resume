@@ -1,5 +1,5 @@
-import Navbar from './components/navbar.jsx'
-import Hero3D from './components/hero3d.jsx'
+import Navbar from './components/home/navbar.jsx'
+import Hero3D from './components/home/hero3d.jsx'
 import About from './sections/about.jsx'
 import Projects from './sections/projects.jsx'
 import Contact from './sections/contact.jsx'

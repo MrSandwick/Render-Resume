@@ -1,4 +1,4 @@
-import { TECH_ITEMS as items, TECH_CATEGORIES as categories } from "../db/techData.js";
+import { TECH_ITEMS as items, TECH_CATEGORIES as categories } from "../../db/techData.js";
 
 export default function TechStack() {
 	const onClick = (cat) => {
