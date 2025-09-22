@@ -1,4 +1,30 @@
-// src/db/sceneData.js (tabs)
+/** 
+ * @typedef {Object} ProjectLink
+ * @property {string} label
+ * @property {string} href
+ */
+
+/** 
+ * @typedef {Object} ProjectSlide
+ * @property {string} id
+ * @property {string} title
+ * @property {string|null} associated
+ * @property {{ start?: string, end?: string }|null} date // YYYY-MM
+ * @property {string|null} dateLabel
+ * @property {string} description
+ * @property {string[]} skills
+ * @property {string[]} features
+ * @property {ProjectLink[]} links
+ */
+
+/** 
+ * @typedef {Object} Scene
+ * @property {Array<{ position: [number,number,number], target: [number,number,number] }>} stops
+ * @property {ProjectSlide[]} slides
+ */
+
+/** @type {{ [sceneId: string]: Scene }} */
+
 export const scenes = {
 	roomTour: {
 		stops: [
@@ -14,45 +40,131 @@ export const scenes = {
 		],
 		slides: [
 			{
+				id: 'agripredict',
 				title: 'AgriPredict — Crop–Climate Analysis',
-				body: 'Jun 2025 – Sep 2025 • National Louis University. EDA and regression on temperature, humidity, pH, rainfall vs crop suitability; rainfall proved non-linear → suggests advanced models. Skills: NumPy, Pandas, Matplotlib, Seaborn, Scikit-Learn, EDA, Regression. GitHub: MrSandwick/AgriAnalysis.'
+				associated: 'National Louis University',
+				date: { start: '2025-06', end: '2025-09' },
+				dateLabel: 'Jun 2025 – Sep 2025',
+				description:
+					'Exploratory data analysis and regression on temperature, humidity, soil pH, and rainfall vs. crop suitability. Found rainfall effects to be non-linear, motivating more advanced models.',
+				skills: ['NumPy', 'Pandas', 'Matplotlib', 'Seaborn', 'Scikit-Learn', 'EDA', 'Regression'],
+				features: [
+					'Correlation profiling across climate & soil variables',
+					'Baseline linear models with diagnostics',
+					'Insight: rainfall shows non-linear influence on yield/suitability',
+					'Clear visuals for feature relationships'
+				],
+				links: [{ label: 'GitHub', href: 'https://github.com/MrSandwick/AgriAnalysis' }]
 			},
 			{
+				id: 'car-dealership-network',
 				title: 'Car Dealership Network Security & Infrastructure',
-				body: 'Jun 2024 – Sep 2024 • Designed VLAN-segmented network for sales/finance/service/reception with routed core and central server to harden access and streamline data flow. Skills: Network Security, Packet Tracer, VLANs, Routing.'
+				associated: null,
+				date: { start: '2024-06', end: '2024-09' },
+				dateLabel: 'Jun 2024 – Sep 2024',
+				description:
+					'Designed a VLAN-segmented network for sales, finance, service, and reception with a routed core and centralized servers to harden access and streamline data flow.',
+				skills: ['Network Security', 'Cisco Packet Tracer', 'VLANs', 'Routing'],
+				features: [
+					'Role-based segmentation (sales/finance/service/reception)',
+					'Inter-VLAN routing with ACL hardening',
+					'Centralized services and simplified traffic paths'
+				],
+				links: []
 			},
 			{
+				id: 'commercial-product-website',
 				title: 'Commercial Product Website',
-				body: 'Responsive storefront built with HTML, CSS, SCSS, and JavaScript. Emphasis on clean UX, modular styles, and fast load for product browsing. Skills: HTML, CSS, SCSS, JavaScript, Responsive UI.'
+				associated: null,
+				date: null,
+				dateLabel: null,
+				description:
+					'Responsive storefront with clean UX, modular SCSS architecture, and fast load times for smooth product browsing.',
+				skills: ['HTML', 'CSS', 'SCSS', 'JavaScript', 'Responsive UI'],
+				features: [
+					'Mobile-first responsive layout',
+					'Modular SCSS with reusable components',
+					'Performance-minded asset strategy'
+				],
+				links: []
 			},
 			{
+				id: 'file-sorter-java',
 				title: 'File Sorter (Java)',
-				body: 'CLI tool that sorts files into subfolders by filename patterns within a target directory. Skills: Java, File Management.'
+				associated: null,
+				date: null,
+				dateLabel: null,
+				description:
+					'CLI utility that sorts files into subfolders by filename patterns within a target directory.',
+				skills: ['Java', 'File I/O'],
+				features: ['Pattern-based categorization', 'Configurable target directory', 'Console feedback/logging'],
+				links: []
 			},
 			{
+				id: 'net-adapter-info',
 				title: 'Network Adapter Information Tool',
-				body: 'Windows utility using IP Helper API to list network interfaces and traffic stats. Skills: Windows API, Networking, C/C++. GitHub: MrSandwick/Net-Adapter-InfoTool.'
+				associated: null,
+				date: null,
+				dateLabel: null,
+				description:
+					'Windows utility using the IP Helper API to list network interfaces and basic traffic statistics.',
+				skills: ['C', 'C++', 'Windows API', 'Networking'],
+				features: ['Enumerates network adapters', 'Displays link/traffic stats', 'Uses Windows IP Helper (iphlpapi)'],
+				links: [{ label: 'GitHub', href: 'https://github.com/MrSandwick/Net-Adapter-InfoTool' }]
 			},
 			{
+				id: 'network-monitor-python',
 				title: 'Network Monitor (Python)',
-				body: 'Monitors network health, checks speeds, and alerts on failures—useful for ISP/5G troubleshooting. Skills: Python, Networking, Monitoring, Automation. GitHub: MrSandwick/-Auto-Net.-Health-Monitor.'
+				associated: null,
+				date: null,
+				dateLabel: null,
+				description:
+					'Monitors network health, checks speeds, and alerts on failures—useful for ISP/5G troubleshooting.',
+				skills: ['Python', 'Networking', 'Monitoring', 'Automation'],
+				features: ['Periodic connectivity checks', 'Speed/bandwidth probes', 'Failure/latency alerting workflow'],
+				links: [{ label: 'GitHub', href: 'https://github.com/MrSandwick/-Auto-Net.-Health-Monitor' }]
 			},
 			{
+				id: 'quiz-game-java',
 				title: 'Quiz Game (Java)',
-				body: 'Console quiz with 5 questions, scoring, feedback, and replay loop. Skills: Java, Git.'
+				associated: null,
+				date: null,
+				dateLabel: null,
+				description:
+					'Console quiz with five questions, scoring, instant feedback, and a replay loop.',
+				skills: ['Java', 'Git'],
+				features: ['Five Q&A rounds', 'Score tracking', 'Replay without restart'],
+				links: []
 			},
 			{
+				id: 'user-group-script',
 				title: 'User & Group Creation Script',
-				body: 'Bash automation to create groups/users, set passwords, and provision home directories with correct permissions. Skills: Linux, Bash, SysAdmin.'
+				associated: null,
+				date: null,
+				dateLabel: null,
+				description:
+					'Bash automation to create groups and users, set passwords, and provision home directories with correct permissions.',
+				skills: ['Linux', 'Bash', 'SysAdmin'],
+				features: ['Batch user/group creation', 'Home directory provisioning', 'Secure permissions defaults'],
+				links: []
 			},
 			{
+				id: 'gittool-c',
 				title: 'gitTool (C)',
-				body: 'Lightweight CLI to speed up common Git actions (commit, push, list branches). Skills: C, Git, CLI. GitHub: MrSandwick/gitTool.'
+				associated: null,
+				date: null,
+				dateLabel: null,
+				description:
+					'Lightweight CLI wrapper to speed up common Git actions (commit, push, list branches).',
+				skills: ['C', 'Git', 'CLI'],
+				features: ['Quick commits', 'Branch listing', 'One-liner pushes'],
+				links: [{ label: 'GitHub', href: 'https://github.com/MrSandwick/gitTool' }]
 			}
 		]
 	}
 }
 
+/** @param {keyof typeof scenes} id */
 export function getScene(id) {
 	return scenes[id] || { stops: [], slides: [] }
 }
