@@ -1,5 +1,5 @@
 // tabs indentation
-import ShapeCanvas from '../components/techbadge.jsx'
+import ShapeCanvas from '../components/techBadge.jsx'
 
 const techIcons = [
 	{ src: 'public/icons/reactjs.png', scale: 0.9 },
