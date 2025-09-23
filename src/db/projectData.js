@@ -54,7 +54,10 @@ export const scenes = {
 					'Insight: rainfall shows non-linear influence on yield/suitability',
 					'Clear visuals for feature relationships'
 				],
-				links: [{ label: 'GitHub', href: 'https://github.com/MrSandwick/AgriAnalysis' }]
+				links: [
+					{ label: 'GitHub', href: 'https://github.com/MrSandwick/AgriAnalysis' },
+					{ label: 'Report', href: '../public/files/AgriPredict_Rep.pdf'}
+				]
 			},
 			{
 				id: 'car-dealership-network',
@@ -70,7 +73,9 @@ export const scenes = {
 					'Inter-VLAN routing with ACL hardening',
 					'Centralized services and simplified traffic paths'
 				],
-				links: []
+				links: [
+					{ label: 'Report', href: '../public/files/CarDealership_Rep.pdf'}
+				]
 			},
 			{
 				id: 'commercial-product-website',
@@ -86,7 +91,10 @@ export const scenes = {
 					'Modular SCSS with reusable components',
 					'Performance-minded asset strategy'
 				],
-				links: []
+				links: [
+					{label: 'Page', href:'https://mrsandwick.github.io/CommercialProduct/'},
+					{label: 'Github', href:'https://github.com/MrSandwick/CommercialProduct'}
+				]
 			},
 			{
 				id: 'file-sorter-java',
@@ -98,7 +106,7 @@ export const scenes = {
 					'CLI utility that sorts files into subfolders by filename patterns within a target directory.',
 				skills: ['Java', 'File I/O'],
 				features: ['Pattern-based categorization', 'Configurable target directory', 'Console feedback/logging'],
-				links: []
+				links: [{ label: 'Github', href:'https://github.com/MrSandwick/FileSorter'}]
 			},
 			{
 				id: 'net-adapter-info',
@@ -134,7 +142,7 @@ export const scenes = {
 					'Console quiz with five questions, scoring, instant feedback, and a replay loop.',
 				skills: ['Java', 'Git'],
 				features: ['Five Q&A rounds', 'Score tracking', 'Replay without restart'],
-				links: []
+				links: [{label: 'GitHub', href: 'https://github.com/MrSandwick/QuizGame'}]
 			},
 			{
 				id: 'user-group-script',
@@ -146,7 +154,7 @@ export const scenes = {
 					'Bash automation to create groups and users, set passwords, and provision home directories with correct permissions.',
 				skills: ['Linux', 'Bash', 'SysAdmin'],
 				features: ['Batch user/group creation', 'Home directory provisioning', 'Secure permissions defaults'],
-				links: []
+				links: [{ label: 'GitHub', href: 'https://github.com/MrSandwick/User-and-Group-Management-Script' }]
 			},
 			{
 				id: 'gittool-c',

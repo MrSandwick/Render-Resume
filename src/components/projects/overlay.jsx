@@ -1,6 +1,26 @@
 import React, { useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
+// tiny helper kept local for convenience
+async function downloadFile(url, filename) {
+	try {
+		const res = await fetch(url, { credentials: 'omit' })
+		if (!res.ok) throw new Error(`HTTP ${res.status}`)
+		const blob = await res.blob()
+		const objectUrl = URL.createObjectURL(blob)
+		const a = document.createElement('a')
+		a.href = objectUrl
+		a.download = filename || url.split('/').pop() || 'download'
+		document.body.appendChild(a)
+		a.click()
+		a.remove()
+		URL.revokeObjectURL(objectUrl)
+	} catch (err) {
+		console.error('Download failed:', err)
+		alert('Download failed. Try again or open the link directly.')
+	}
+}
+
 export default function Overlay({ step, arrived, slides, onWheelStep }) {
 	const containerRef = useRef(null)
 	const cooldown = useRef(0)
@@ -21,10 +41,7 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 			// direction of scroll: +1 forward, -1 backward
 			const dir = Math.sign(e.deltaY)
 
-			// Infinite wrap deltas:
-			// - When at the last slide and scrolling forward, jump to first with delta = -(len-1)
-			// - When at the first slide and scrolling backward, jump to last with delta = +(len-1)
-			// - Otherwise, move by ±1 as usual
+			// Infinite wrap deltas
 			if (dir !== 0) {
 				const atFirst = step <= 0
 				const atLast = step >= len - 1
@@ -43,7 +60,6 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 
 		el.addEventListener('wheel', onWheel, { passive: false })
 		return () => el.removeEventListener('wheel', onWheel)
-		// Depend on step/len to always compute correct wrap behavior at edges
 	}, [onWheelStep, step, len])
 
 	const slide = len ? slides[safeIndex] : null
@@ -58,8 +74,8 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 		<div ref={containerRef} className="pointer-events-auto absolute inset-0 grid place-items-center select-none">
 			<div className="w-full max-w-3xl px-6">
 				<div className="flex items-center justify-between text-xs uppercase tracking-widest opacity-70 mb-3">
-					<span className='font-semibold'>Step {len ? safeIndex + 1 : 0} / {len}</span>
-					<span className='font-semibold'>Scroll to navigate</span>
+					<span className="font-semibold">Step {len ? safeIndex + 1 : 0} / {len}</span>
+					<span className="font-semibold">Scroll to navigate</span>
 				</div>
 
 				<AnimatePresence mode="popLayout">
@@ -112,31 +128,47 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 
 							{/* Features */}
 							{features.length > 0 && (
-								<div className="">
+								<div>
 									<div className="text-xs uppercase tracking-widest opacity-70">Features</div>
 									<ul className="list-disc list-inside space-y-1 text-sm md:text-base opacity-90">
 										{features.map((f, i) => (
-											<li className='m-0' key={i}>{f}</li>
+											<li className="m-0" key={i}>{f}</li>
 										))}
 									</ul>
 								</div>
 							)}
 
-							{/* Links */}
+							{/* Links*/}
 							{links.length > 0 && (
-								<div className="pt-2 flex flex-wrap gap-3">
-									{links.map((l, i) => (
-										<a
-											key={i}
-											href={l.href}
-											target="_blank"
-											rel="noreferrer"
-											className="inline-flex items-center text-sm px-3 py-1.5 rounded-full border border-white/15 bg-white/10 hover:bg-white/15 transition"
-										>
-											<span className="i-lucide-link-2" aria-hidden />
-											{l.label}
-										</a>
-									))}
+								<div className="pt-3 flex flex-wrap gap-2">
+									{links.map((l, i) => {
+										const isDownload = l.download === true
+										const commonClass =
+											'inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-full border border-white/15 bg-white/10 hover:bg-white/15 transition'
+
+										return isDownload ? (
+											<button
+												key={i}
+												type="button"
+												onClick={() => downloadFile(l.href, l.filename)}
+												className={commonClass}
+												aria-label={l.label || 'Download file'}
+											>
+												{l.label}
+											</button>
+										) : (
+											<a
+												key={i}
+												href={l.href}
+												target="_blank"
+												rel="noreferrer"
+												className={commonClass}
+												title={l.href}
+											>
+												{l.label}
+											</a>
+										)
+									})}
 								</div>
 							)}
 						</motion.div>
