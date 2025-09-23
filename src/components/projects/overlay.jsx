@@ -1,29 +1,68 @@
 import React, { useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
+// tiny helper kept local for convenience
+async function downloadFile(url, filename) {
+	try {
+		const res = await fetch(url, { credentials: 'omit' })
+		if (!res.ok) throw new Error(`HTTP ${res.status}`)
+		const blob = await res.blob()
+		const objectUrl = URL.createObjectURL(blob)
+		const a = document.createElement('a')
+		a.href = objectUrl
+		a.download = filename || url.split('/').pop() || 'download'
+		document.body.appendChild(a)
+		a.click()
+		a.remove()
+		URL.revokeObjectURL(objectUrl)
+	} catch (err) {
+		console.error('Download failed:', err)
+		alert('Download failed. Try again or open the link directly.')
+	}
+}
+
 export default function Overlay({ step, arrived, slides, onWheelStep }) {
 	const containerRef = useRef(null)
 	const cooldown = useRef(0)
 
+	// Compute a safe wrapped index for rendering, regardless of parent bounds
+	const len = Array.isArray(slides) ? slides.length : 0
+	const safeIndex = len > 0 ? ((step % len) + len) % len : 0
+
 	useEffect(() => {
 		const el = containerRef.current
-		if (!el) return
+		if (!el || !len) return
 
 		const onWheel = (e) => {
 			e.preventDefault()
 			const t = performance.now()
 			if (t < cooldown.current) return
+
+			// direction of scroll: +1 forward, -1 backward
 			const dir = Math.sign(e.deltaY)
-			if (dir > 0) onWheelStep(1)
-			else if (dir < 0) onWheelStep(-1)
-			cooldown.current = t + 150
+
+			// Infinite wrap deltas
+			if (dir !== 0) {
+				const atFirst = step <= 0
+				const atLast = step >= len - 1
+
+				let delta = 0
+				if (dir > 0) {
+					delta = atLast ? -(len - 1) : 1
+				} else {
+					delta = atFirst ? (len - 1) : -1
+				}
+
+				onWheelStep(delta)
+				cooldown.current = t + 150
+			}
 		}
 
 		el.addEventListener('wheel', onWheel, { passive: false })
 		return () => el.removeEventListener('wheel', onWheel)
-	}, [onWheelStep])
+	}, [onWheelStep, step, len])
 
-	const slide = slides?.[step]
+	const slide = len ? slides[safeIndex] : null
 
 	// graceful fallback if old shape `{ body }` is passed
 	const description = slide?.description ?? slide?.body ?? ''
@@ -35,14 +74,14 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 		<div ref={containerRef} className="pointer-events-auto absolute inset-0 grid place-items-center select-none">
 			<div className="w-full max-w-3xl px-6">
 				<div className="flex items-center justify-between text-xs uppercase tracking-widest opacity-70 mb-3">
-					<span>Step {step + 1} / {slides.length}</span>
-					<span>Scroll to navigate</span>
+					<span className="font-semibold">Step {len ? safeIndex + 1 : 0} / {len}</span>
+					<span className="font-semibold">Scroll to navigate</span>
 				</div>
 
 				<AnimatePresence mode="popLayout">
 					{arrived && slide && (
 						<motion.div
-							key={slide.id ?? step}
+							key={slide.id ?? safeIndex}
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: -20 }}
@@ -89,31 +128,47 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 
 							{/* Features */}
 							{features.length > 0 && (
-								<div className="">
+								<div>
 									<div className="text-xs uppercase tracking-widest opacity-70">Features</div>
 									<ul className="list-disc list-inside space-y-1 text-sm md:text-base opacity-90">
 										{features.map((f, i) => (
-											<li className='m-0' key={i}>{f}</li>
+											<li className="m-0" key={i}>{f}</li>
 										))}
 									</ul>
 								</div>
 							)}
 
-							{/* Links */}
+							{/* Links*/}
 							{links.length > 0 && (
-								<div className="pt-2 flex flex-wrap gap-3">
-									{links.map((l, i) => (
-										<a
-											key={i}
-											href={l.href}
-											target="_blank"
-											rel="noreferrer"
-											className="inline-flex items-center text-sm px-3 py-1.5 rounded-full border border-white/15 bg-white/10 hover:bg-white/15 transition"
-										>
-											<span className="i-lucide-link-2" aria-hidden />
-											{l.label}
-										</a>
-									))}
+								<div className="pt-3 flex flex-wrap gap-2">
+									{links.map((l, i) => {
+										const isDownload = l.download === true
+										const commonClass =
+											'inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-full border border-white/15 bg-white/10 hover:bg-white/15 transition'
+
+										return isDownload ? (
+											<button
+												key={i}
+												type="button"
+												onClick={() => downloadFile(l.href, l.filename)}
+												className={commonClass}
+												aria-label={l.label || 'Download file'}
+											>
+												{l.label}
+											</button>
+										) : (
+											<a
+												key={i}
+												href={l.href}
+												target="_blank"
+												rel="noreferrer"
+												className={commonClass}
+												title={l.href}
+											>
+												{l.label}
+											</a>
+										)
+									})}
 								</div>
 							)}
 						</motion.div>
