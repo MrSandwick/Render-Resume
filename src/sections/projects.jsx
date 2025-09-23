@@ -1,48 +1,31 @@
-export default function Projects() {
-	const projects = [
-		{
-			title: "AgriPredict",
-			desc: "Analyzed crop data with EDA + regression (NumPy, Pandas, Matplotlib, Scikit-Learn)",
-			href: "https://github.com/MrSandwick/AgriAnalysis",
-		},
-		{
-			title: "Car Dealership Network Security & Infrastructure",
-			desc: "Designed secure network (Cisco Packet Tracer, VLANs, Firewall Rules)",
-		},
-		{
-			title: "Commercial Product Website",
-			desc: "Responsive storefront UI (HTML, CSS, SCSS, JavaScript)",
-		},
-		{
-			title: "File Sorter",
-			desc: "Java program auto-sorts files by name patterns",
-		},
-		{
-			title: "Network Adapter Information Tool",
-			desc: "C + Windows API utility listing network interfaces and stats",
-			href: "https://github.com/MrSandwick/Net-Adapter-InfoTool",
-		},
-		{
-			title: "Network Monitor",
-			desc: "Python tool for network health monitoring & alerts",
-			href: "https://github.com/MrSandwick/-Auto-Net.-Health-Monitor",
-		},
-		{
-			title: "Quiz Game",
-			desc: "Java console quiz game with scoring & replay",
-		},
-		{
-			title: "User & Group Creation Script",
-			desc: "Linux Bash script for automated user/group setup",
-		},
-		{
-			title: "gitTool",
-			desc: "C-based CLI tool automating Git tasks",
-			href: "https://github.com/MrSandwick/gitTool",
-		},
-	]
+import React from 'react'
+import { scenes } from '../db/projectData'
 
+export default function Projects() {
+	const projectsData = scenes?.roomTour?.slides ?? []
+
+	// choose max items
 	const MAX = 4
+
+	// simple selector to pick best href per project
+	const pickHref = (slide) => {
+		const links = Array.isArray(slide?.links) ? slide.links : []
+		const github = links.find(l => /github/i.test(l.label || '') || /github\.com/i.test(l.href || ''))
+		
+		// prefer GitHub; otherwise route to the Projects page 
+		if (github?.href) return github.href
+		return `/projects#${slide?.id || ''}`
+	}
+
+
+	// derive a lightweight list for the UI
+	const projects = projectsData.map(s => ({
+		key: s.id || s.title,
+		title: s.title,
+		desc: s.description || s.body || '',
+		href: pickHref(s),
+	}))
+
 	const visible = projects.slice(0, MAX)
 
 	return (
@@ -52,22 +35,22 @@ export default function Projects() {
 			[&_a]:!text-white [&_a:hover]:!text-white [&_a:focus]:!text-white [&_a:visited]:!text-white"
 		>
 			<h2 className="text-2xl font-semibold mb-6">Projects</h2>
-			
+
 			<div className="grid gap-4">
 				{visible.map((p) => (
 					<a
-						key={p.title}
+						key={p.key}
 						className="block border border-white/10 rounded-xl p-4 bg-white/5 hover:bg-white/10 transition"
-						href={p.href || '/projects'}
-						target={p.href ? '_blank' : undefined}
-						rel={p.href ? 'noreferrer' : undefined}
+						href={p.href}
+						target={/^https?:\/\//i.test(p.href) ? '_blank' : undefined}
+						rel={/^https?:\/\//i.test(p.href) ? 'noreferrer' : undefined}
 					>
 						<div className="font-medium">{p.title}</div>
 						<div className="text-sm opacity-80">{p.desc}</div>
 					</a>
 				))}
 			</div>
-			
+
 			<div className="mt-4 flex justify-end">
 				<a
 					href="/projects"
@@ -79,6 +62,5 @@ export default function Projects() {
 				</a>
 			</div>
 		</section>
-
 	)
 }
