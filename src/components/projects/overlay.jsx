@@ -73,7 +73,7 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 	return (
 		<div ref={containerRef} className="pointer-events-auto absolute inset-0 grid place-items-center select-none">
 			<div className="w-full max-w-3xl px-6">
-				<div className="flex items-center justify-between text-xs uppercase tracking-widest opacity-70 mb-3">
+				<div className="flex items-center justify-between text-xs uppercase tracking-widest opacity-70 mb-1">
 					<span className="font-semibold">Step {len ? safeIndex + 1 : 0} / {len}</span>
 					<span className="font-semibold">Scroll to navigate</span>
 				</div>
@@ -86,7 +86,7 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: -20 }}
 							transition={{ duration: 0.5, ease: 'easeOut' }}
-							className="rounded-2xl p-6 backdrop-blur bg-black/20 border border-white/10 shadow-xl"
+							className="rounded-2xl p-5 backdrop-blur bg-black/20 border border-white/10 shadow-xl"
 						>
 							{/* Title */}
 							<h2 className="text-2xl md:text-3xl font-semibold mb-2">
