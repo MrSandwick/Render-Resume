@@ -1,7 +1,7 @@
 import React from 'react'
 import StarsCanvas from '../components/home/contact/starscanvas'
 import ContactsCard from '../components/home/contact/contactcard'
-import BoomCanvas from '../components/home/contact/boomcanvas'
+import ConCanvas from '../components/home/contact/concanvas'
 
 export default function ContactSection() {
 	return (
@@ -16,7 +16,7 @@ export default function ContactSection() {
 				md:[&>*:first-child]:order-1 md:[&>*:last-child]:order-2"
 			>
 				<ContactsCard />
-				<BoomCanvas />
+				<ConCanvas />
 			</div>
 		</section>
 	)
