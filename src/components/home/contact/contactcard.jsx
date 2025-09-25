@@ -15,8 +15,8 @@ export default function ContactsCard() {
 							<a
 								className="group flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition focus:outline-none focus:ring-2 focus:ring-white/40"
 								href={c.href}
-								target={c.href.startsWith('http') ? '_blank' : undefined}
-								rel={c.href.startsWith('http') ? 'noreferrer noopener' : undefined}
+								target="_blank"
+								rel="noreferrer noopener"
 								aria-label={c.aria}
 							>
 								<span className="inline-block w-5 text-center" aria-hidden>{c.icon}</span>
