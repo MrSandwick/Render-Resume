@@ -17,7 +17,11 @@ export default function Navbar() {
 	return (
 		<header className="sticky top-0 z-50 w-full bg-black/60 backdrop-blur text-white">
 			<nav className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-				<HashLink to="/" className="font-bold">Render & Resume</HashLink>
+				<HashLink to="/" className="flex items-center gap-3 font-bold ml-2">
+					<img src="/icons/logo2.svg" alt="Logo" className="h-10 w-auto" />
+					Render & Resume
+				</HashLink>
+
 
 				{/* Desktop links */}
 				<div className="hidden md:flex items-center gap-6 text-sm">
