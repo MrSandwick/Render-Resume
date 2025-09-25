@@ -2,9 +2,9 @@
 import React, { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Html, Preload, Bounds } from '@react-three/drei'
-import Boom from '../contact/boom'
+import Boom from './bocky'
 
-export default function BoomCanvas({ className = '' }) {
+export default function ConCanvas({ className = '' }) {
 	const modelUrl = '/models/bocky.glb'
 	return (
 		<div className={`relative h-full ${className}`}>
