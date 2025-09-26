@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react'
 import { Canvas } from '@react-three/fiber'
-import Navbar from '../components/home/navbar'
+import Navbar from '../components/home/utils/navbar'
 import { getScene } from '../db/projectData'
 import { CameraRig, Overlay, RoomModel, SceneLights } from '../components/projects'
 

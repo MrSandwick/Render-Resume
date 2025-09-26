@@ -1,4 +1,4 @@
-import Navbar from '../components/home/navbar.jsx'
+import Navbar from '../components/home/utils/navbar.jsx'
 import Techback from '../components/tech/techback.jsx'
 import Techcard from '../components/tech/techcard.jsx'
 

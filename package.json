@@ -13,7 +13,6 @@
     "@react-three/drei": "^10.7.5",
     "@react-three/fiber": "^9.3.0",
     "@react-three/postprocessing": "^3.0.4",
-    "d3-force": "^3.0.0",
     "framer-motion": "^12.23.16",
     "postprocessing": "^6.37.8",
     "react": "^19.1.1",
@@ -25,10 +24,6 @@
   "devDependencies": {
     "@eslint/js": "^9.33.0",
     "@tailwindcss/vite": "^4.1.13",
-    "@types/d3": "^7.4.3",
-    "@types/d3-force": "^3.0.10",
-    "@types/react": "^19.1.10",
-    "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.0",
     "eslint": "^9.33.0",
     "eslint-plugin-react-hooks": "^5.2.0",
