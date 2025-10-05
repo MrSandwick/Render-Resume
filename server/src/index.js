@@ -4,12 +4,18 @@ import cors from 'cors'
 import rateLimit from 'express-rate-limit'
 import { connectDB } from './db.js'
 import { env } from './env.js'
+import mongoose from 'mongoose'
 
 import projectsRouter from './routes/projects.js'
 import skillsRouter from './routes/skills.js'
 import contactRouter from './routes/contact.js'
 
 await connectDB()
+console.log(
+	"Mongo connected host=%s db=%s",
+	mongoose.connection.host,
+	mongoose.connection.name
+)
 
 const app = express()
 
