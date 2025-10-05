@@ -4,7 +4,7 @@ export const env = {
 	port: process.env.PORT || 5050,
 	nodeEnv: process.env.NODE_ENV || 'development',
 	origin: process.env.CORS_ORIGIN || '*',
-	mongoUri: process.env.MONGO_URI,
+	mongoUri: process.env.MONGO_URI || process.env.MONGODB_URI || "",
 	adminKey: process.env.ADMIN_API_KEY,
 	smtp: {
 		host: process.env.SMTP_HOST,
