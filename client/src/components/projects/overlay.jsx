@@ -1,31 +1,20 @@
-import React, { useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useEffect, useMemo, useRef, useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 
-// tiny helper kept local for convenience
-async function downloadFile(url, filename) {
-	try {
-		const res = await fetch(url, { credentials: 'omit' })
-		if (!res.ok) throw new Error(`HTTP ${res.status}`)
-		const blob = await res.blob()
-		const objectUrl = URL.createObjectURL(blob)
-		const a = document.createElement('a')
-		a.href = objectUrl
-		a.download = filename || url.split('/').pop() || 'download'
-		document.body.appendChild(a)
-		a.click()
-		a.remove()
-		URL.revokeObjectURL(objectUrl)
-	} catch (err) {
-		console.error('Download failed:', err)
-		alert('Download failed. Try again or open the link directly.')
-	}
+/* -------------------------- FETCH HELPER (LOCAL) ------------------------- */
+async function fetchJSON(path) {
+	const base = import.meta.env.VITE_API_URL?.replace(/\/+$/, "") || ""
+	const url = `${base}${path.startsWith("/") ? path : `/${path}`}`
+	const res = await fetch(url, { headers: { "Accept": "application/json" } })
+	if (!res.ok) throw new Error(`HTTP ${res.status}`)
+	return res.json()
 }
 
+/* ------------------------- PRESENTATIONAL OVERLAY ------------------------ */
 export default function Overlay({ step, arrived, slides, onWheelStep }) {
 	const containerRef = useRef(null)
 	const cooldown = useRef(0)
 
-	// Compute a safe wrapped index for rendering, regardless of parent bounds
 	const len = Array.isArray(slides) ? slides.length : 0
 	const safeIndex = len > 0 ? ((step % len) + len) % len : 0
 
@@ -37,35 +26,25 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 			e.preventDefault()
 			const t = performance.now()
 			if (t < cooldown.current) return
-
-			// direction of scroll: +1 forward, -1 backward
 			const dir = Math.sign(e.deltaY)
-
-			// Infinite wrap deltas
 			if (dir !== 0) {
 				const atFirst = step <= 0
 				const atLast = step >= len - 1
-
 				let delta = 0
-				if (dir > 0) {
-					delta = atLast ? -(len - 1) : 1
-				} else {
-					delta = atFirst ? (len - 1) : -1
-				}
-
+				if (dir > 0) delta = atLast ? -(len - 1) : 1
+				else delta = atFirst ? (len - 1) : -1
 				onWheelStep(delta)
 				cooldown.current = t + 150
 			}
 		}
 
-		el.addEventListener('wheel', onWheel, { passive: false })
-		return () => el.removeEventListener('wheel', onWheel)
+		el.addEventListener("wheel", onWheel, { passive: false })
+		return () => el.removeEventListener("wheel", onWheel)
 	}, [onWheelStep, step, len])
 
 	const slide = len ? slides[safeIndex] : null
 
-	// graceful fallback if old shape `{ body }` is passed
-	const description = slide?.description ?? slide?.body ?? ''
+	const description = slide?.description ?? slide?.body ?? ""
 	const skills = Array.isArray(slide?.skills) ? slide.skills : []
 	const features = Array.isArray(slide?.features) ? slide.features : []
 	const links = Array.isArray(slide?.links) ? slide.links : []
@@ -85,15 +64,11 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: -20 }}
-							transition={{ duration: 0.5, ease: 'easeOut' }}
+							transition={{ duration: 0.5, ease: "easeOut" }}
 							className="rounded-2xl p-5 backdrop-blur bg-black/20 border border-white/10 shadow-xl"
 						>
-							{/* Title */}
-							<h2 className="text-2xl md:text-3xl font-semibold mb-2">
-								{slide.title}
-							</h2>
+							<h2 className="text-2xl md:text-3xl font-semibold mb-2">{slide.title}</h2>
 
-							{/* Meta row: date • associated */}
 							{(slide.dateLabel || slide.associated) && (
 								<div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs md:text-sm text-white/80 mb-3">
 									{slide.dateLabel && <span className="whitespace-nowrap">{slide.dateLabel}</span>}
@@ -102,23 +77,16 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 								</div>
 							)}
 
-							{/* Description */}
 							{description && (
-								<p className="text-sm md:text-base leading-relaxed opacity-90 mb-2">
-									{description}
-								</p>
+								<p className="text-sm md:text-base leading-relaxed opacity-90 mb-2">{description}</p>
 							)}
 
-							{/* Skills */}
 							{skills.length > 0 && (
 								<div className="mb-2">
 									<div className="text-xs uppercase tracking-widest opacity-70 mb-2">Skills</div>
 									<div className="flex flex-wrap gap-2">
 										{skills.map((s, i) => (
-											<span
-												key={i}
-												className="text-xs md:text-sm px-2 py-1 rounded-full bg-white/10 border border-white/10"
-											>
+											<span key={i} className="text-xs md:text-sm px-2 py-1 rounded-full bg-white/10 border border-white/10">
 												{s}
 											</span>
 										))}
@@ -126,49 +94,29 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 								</div>
 							)}
 
-							{/* Features */}
 							{features.length > 0 && (
 								<div>
 									<div className="text-xs uppercase tracking-widest opacity-70">Features</div>
 									<ul className="list-disc list-inside space-y-1 text-sm md:text-base opacity-90">
-										{features.map((f, i) => (
-											<li className="m-0" key={i}>{f}</li>
-										))}
+										{features.map((f, i) => (<li className="m-0" key={i}>{f}</li>))}
 									</ul>
 								</div>
 							)}
 
-							{/* Links*/}
 							{links.length > 0 && (
 								<div className="pt-3 flex flex-wrap gap-2">
-									{links.map((l, i) => {
-										const isDownload = l.download === true
-										const commonClass =
-											'inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-full border border-white/15 bg-white/10 hover:bg-white/15 transition'
-
-										return isDownload ? (
-											<button
-												key={i}
-												type="button"
-												onClick={() => downloadFile(l.href, l.filename)}
-												className={commonClass}
-												aria-label={l.label || 'Download file'}
-											>
-												{l.label}
-											</button>
-										) : (
-											<a
-												key={i}
-												href={l.href}
-												target="_blank"
-												rel="noreferrer"
-												className={commonClass}
-												title={l.href}
-											>
-												{l.label}
-											</a>
-										)
-									})}
+									{links.map((l, i) => (
+										<a
+											key={i}
+											href={l.href}
+											target="_blank"
+											rel="noreferrer"
+											className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-full border border-white/15 bg-white/10 hover:bg-white/15 transition"
+											title={l.href}
+										>
+											{l.label}
+										</a>
+									))}
 								</div>
 							)}
 						</motion.div>
@@ -176,5 +124,60 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 				</AnimatePresence>
 			</div>
 		</div>
+	)
+}
+
+/* ------------------------ CONNECTED WRAPPER (DB) ------------------------ */
+/* Usage:
+	<ConnectedProjectsOverlay
+		step={step}
+		arrived={arrived}
+		onWheelStep={next}
+		stopsLength={stops.length}
+	/>
+*/
+export function ConnectedProjectsOverlay({ step, arrived, onWheelStep, stopsLength, query = {} }) {
+	const [slides, setSlides] = useState([])
+	const [err, setErr] = useState(null)
+
+	useEffect(() => {
+		let cancel = false
+		const params = new URLSearchParams()
+		if (query.q) params.set("q", query.q)
+		if (query.skill) params.set("skill", query.skill)
+		if (query.limit) params.set("limit", String(query.limit))
+		if (query.sort) params.set("sort", query.sort)
+
+		fetchJSON(`/api/projects${params.toString() ? `?${params}` : ""}`)
+			.then((docs) => {
+				if (cancel) return
+				const mapped = (Array.isArray(docs) ? docs : []).map((p, i) => ({
+					id: p._id || `p-${i + 1}`,
+					title: p.title || "Untitled",
+					description: p.description || "",
+					associated: p.associated ?? null,
+					dateLabel: p.dateLabel ?? null,
+					skills: Array.isArray(p.skills) ? p.skills : [],
+					features: Array.isArray(p.features) ? p.features : [],
+					links: Array.isArray(p.links) ? p.links.map(l => ({ label: l.label, href: l.href })) : []
+				}))
+				// Keep slides count aligned with camera stops
+				setSlides(stopsLength > 0 ? mapped.slice(0, stopsLength) : mapped)
+			})
+			.catch((e) => !cancel && setErr(e))
+
+		return () => { cancel = true }
+	}, [stopsLength, query.q, query.skill, query.limit, query.sort])
+
+	// Optional: tiny banner if fetch failed (doesn't block)
+	return (
+		<>
+			{err && (
+				<div className="absolute top-14 left-1/2 -translate-x-1/2 text-red-300 text-xs bg-red-900/30 px-2 py-1 rounded">
+					Failed to load projects
+				</div>
+			)}
+			<Overlay step={step} arrived={arrived} slides={slides} onWheelStep={onWheelStep} />
+		</>
 	)
 }

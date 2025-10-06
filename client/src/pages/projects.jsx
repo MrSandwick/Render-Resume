@@ -1,11 +1,13 @@
-import React, { useMemo, useState, useCallback } from 'react'
-import { Canvas } from '@react-three/fiber'
-import Navbar from '../components/home/utils/navbar'
-import { getScene } from '../db/projectData'
-import { CameraRig, Overlay, RoomModel, SceneLights } from '../components/projects'
+// src/pages/RoomShowcase.jsx
+import React, { useMemo, useState, useCallback } from "react"
+import { Canvas } from "@react-three/fiber"
+import Navbar from "../components/home/utils/navbar"
+import { CameraRig, RoomModel, SceneLights } from "../components/projects"
+import { ConnectedProjectsOverlay } from "../components/projects/overlay.jsx"
+import { getScene } from "../db/projectData"   // ✅ import from JS module
 
 export default function RoomShowcase() {
-	const { stops, slides } = useMemo(() => getScene('roomTour'), [])
+	const { stops } = useMemo(() => getScene("roomTour"), [])   // ✅ no stopsData var
 
 	const [step, setStep] = useState(0)
 	const [arrived, setArrived] = useState(true)
@@ -26,7 +28,12 @@ export default function RoomShowcase() {
 				<CameraRig stops={stops} index={step} onArrive={(ok) => ok && setArrived(true)} />
 			</Canvas>
 
-			<Overlay step={step} arrived={arrived} slides={slides} onWheelStep={next} />
+			<ConnectedProjectsOverlay
+				step={step}
+				arrived={arrived}
+				onWheelStep={next}
+				stopsLength={stops.length}
+			/>
 		</div>
 	)
 }
