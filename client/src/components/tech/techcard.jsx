@@ -19,7 +19,6 @@ export default function TechStack() {
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
 				const data = await res.json()
 				if (live) {
-					console.log("skills loaded:", data.length, data.slice(0, 3))
 					setItems(Array.isArray(data) ? data : [])
 				}
 			} catch (e) {
@@ -37,7 +36,7 @@ export default function TechStack() {
 		return ["All", ...Array.from(set).sort()]
 	}, [items])
 
-	// 3) Your DOM-based filter (unchanged), but ensure “All” is applied on data load
+	// 3) DOM-based filter (unchanged), but ensure “All” is applied on data load
 	const onClick = (cat) => {
 		setSelected(cat)
 		const root = document.getElementById("cards")

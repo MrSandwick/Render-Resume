@@ -21,7 +21,6 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "seed:skills": "node ./src/scripts/seed-skills.js"
+    "dev": "nodemon src/index.js"
   }
 }
