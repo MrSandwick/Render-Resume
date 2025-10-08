@@ -4,10 +4,13 @@ import About from './sections/about.jsx'
 import Projects from './sections/projects.jsx'
 import Contact from './sections/contact.jsx'
 import TechStack from './sections/techstack.jsx'
+import GlobalLoader from '/src/components/comm/loader.jsx'
+
 
 export default function App() {
 	return (
 		<div className="w-full min-h-screen bg-black text-white">
+			<GlobalLoader />
 			<Navbar />
 			<Hero3D />
 			<About />
