@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link';
 import App from './App.jsx'
 import TechPage from './pages/techdetails.jsx'
-import ProjectsPage from './pages/projects.jsx'
+import ProjectsPage from './pages/projectspage.jsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(

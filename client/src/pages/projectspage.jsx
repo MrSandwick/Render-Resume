@@ -1,10 +1,10 @@
 // src/pages/RoomShowcase.jsx
 import React, { useMemo, useState, useCallback } from "react"
 import { Canvas } from "@react-three/fiber"
-import Navbar from "../components/home/utils/navbar"
-import { CameraRig, RoomModel, SceneLights } from "../components/projects"
+import Navbar from "../components/home/utils/navbar.jsx"
+import { CameraRig, RoomModel, SceneLights } from "../components/projects/index.jsx"
 import { ConnectedProjectsOverlay } from "../components/projects/overlay.jsx"
-import { getScene } from "../db/projectData"   // ✅ import from JS module
+import { getScene } from "../db/projectData.js"   // ✅ import from JS module
 
 export default function RoomShowcase() {
 	const { stops } = useMemo(() => getScene("roomTour"), [])   // ✅ no stopsData var
