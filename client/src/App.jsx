@@ -15,7 +15,7 @@ export default function App() {
 			<Projects />
 			<Contact />
 			<footer className="w-full text-center opacity-60 text-xs pb-8">
-				© {new Date().getFullYear()} You
+				© {new Date().getFullYear()} Baatyrbek
 			</footer>
 		</div>
 	)

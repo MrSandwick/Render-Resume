@@ -2,6 +2,7 @@ import React from 'react'
 import StarsCanvas from '../components/home/contact/starscanvas'
 import ContactsCard from '../components/home/contact/contactcard'
 import ConCanvas from '../components/home/contact/concanvas'
+import EmailFormCard from '../components/home/contact/emailcard'
 
 export default function ContactSection() {
 	return (
@@ -10,12 +11,15 @@ export default function ContactSection() {
 			<div
 				className="relative z-10 max-w-5xl mx-auto px-4 py-12
 				grid grid-cols-1 md:[grid-template-columns:0.9fr_1.1fr] gap-6
-				items-center
+				items-center justify-items-center
 				[&>*]:min-w-0
 				[&>*:first-child]:order-2 [&>*:last-child]:order-1
 				md:[&>*:first-child]:order-1 md:[&>*:last-child]:order-2"
 			>
-				<ContactsCard />
+				<div className="flex gap-6 flex-col-reverse [&>*]:min-w-0">
+					<EmailFormCard />
+					<ContactsCard />
+				</div>
 				<ConCanvas />
 			</div>
 		</section>
