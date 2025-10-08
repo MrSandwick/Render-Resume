@@ -1,16 +1,15 @@
-// src/components/projects/ConnectedProjectsOverlay.jsx
+// src/components/projects/overlay.jsx (a.k.a. ConnectedProjectsOverlay.jsx)
 import React, { useEffect, useMemo, useRef } from "react"
 import { useProjects } from "../../lib/useProjects"
 import { motion, AnimatePresence } from "framer-motion"
 
-/* ------------------------------ UTIL: SAFE ID ----------------------------- */
-function toSafeId(v, fallback) {
+function toSafeId(v, fb) {
 	return (
-		String(v ?? fallback ?? "")
+		String(v ?? fb ?? '')
 			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, "-")
-			.replace(/^-+|-+$/g, "")
-	) || String(fallback ?? "")
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/^-+|-+$/g, '')
+	) || String(fb ?? '')
 }
 
 /* ------------------------- PRESENTATIONAL OVERLAY ------------------------ */
@@ -35,7 +34,7 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 				const atLast = step >= len - 1
 				let delta = 0
 				if (dir > 0) delta = atLast ? -(len - 1) : 1
-				else delta = atFirst ? len - 1 : -1
+				else delta = atFirst ? (len - 1) : -1
 				onWheelStep(delta)
 				cooldown.current = t + 150
 			}
@@ -53,64 +52,43 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 	const links = Array.isArray(slide?.links) ? slide.links : []
 
 	return (
-		<div
-			ref={containerRef}
-			className="pointer-events-auto absolute inset-0 grid place-items-center select-none"
-		>
+		<div ref={containerRef} className="pointer-events-auto absolute inset-0 grid place-items-center select-none">
 			<div className="w-full max-w-3xl px-6">
 				<div className="flex items-center justify-between text-xs uppercase tracking-widest opacity-70 mb-1">
-					<span className="font-semibold">
-						Step {len ? safeIndex + 1 : 0} / {len}
-					</span>
+					<span className="font-semibold">Step {len ? safeIndex + 1 : 0} / {len}</span>
 					<span className="font-semibold">Scroll to navigate</span>
 				</div>
 
 				<AnimatePresence mode="popLayout">
 					{arrived && slide && (
 						<motion.div
-							key={slide.id}
-							id={slide.id} /* anchor target */
+							key={safeIndex}
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: -20 }}
 							transition={{ duration: 0.5, ease: "easeOut" }}
 							className="rounded-2xl p-5 backdrop-blur bg-black/20 border border-white/10 shadow-xl"
 						>
-							<h2 className="text-2xl md:text-3xl font-semibold mb-2">
-								{slide.title}
-							</h2>
+							<h2 className="text-2xl md:text-3xl font-semibold mb-2">{slide.title}</h2>
 
 							{(slide.dateLabel || slide.associated) && (
 								<div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs md:text-sm text-white/80 mb-3">
-									{slide.dateLabel && (
-										<span className="whitespace-nowrap">{slide.dateLabel}</span>
-									)}
-									{slide.dateLabel && slide.associated && (
-										<span className="opacity-50">•</span>
-									)}
-									{slide.associated && (
-										<span className="whitespace-nowrap">{slide.associated}</span>
-									)}
+									{slide.dateLabel && <span className="whitespace-nowrap">{slide.dateLabel}</span>}
+									{slide.dateLabel && slide.associated && <span className="opacity-50">•</span>}
+									{slide.associated && <span className="whitespace-nowrap">{slide.associated}</span>}
 								</div>
 							)}
 
 							{description && (
-								<p className="text-sm md:text-base leading-relaxed opacity-90 mb-2">
-									{description}
-								</p>
+								<p className="text-sm md:text-base leading-relaxed opacity-90 mb-2">{description}</p>
 							)}
 
 							{skills.length > 0 && (
 								<div className="mb-2">
-									<div className="text-xs uppercase tracking-widest opacity-70 mb-2">
-										Skills
-									</div>
+									<div className="text-xs uppercase tracking-widest opacity-70 mb-2">Skills</div>
 									<div className="flex flex-wrap gap-2">
 										{skills.map((s, i) => (
-											<span
-												key={i}
-												className="text-xs md:text-sm px-2 py-1 rounded-full bg-white/10 border border-white/10"
-											>
+											<span key={i} className="text-xs md:text-sm px-2 py-1 rounded-full bg-white/10 border border-white/10">
 												{s}
 											</span>
 										))}
@@ -120,15 +98,9 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 
 							{features.length > 0 && (
 								<div>
-									<div className="text-xs uppercase tracking-widest opacity-70">
-										Features
-									</div>
+									<div className="text-xs uppercase tracking-widest opacity-70">Features</div>
 									<ul className="list-disc list-inside space-y-1 text-sm md:text-base opacity-90">
-										{features.map((f, i) => (
-											<li className="m-0" key={i}>
-												{f}
-											</li>
-										))}
+										{features.map((f, i) => (<li className="m-0" key={i}>{f}</li>))}
 									</ul>
 								</div>
 							)}
@@ -157,13 +129,14 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 	)
 }
 
-
 export function ConnectedProjectsOverlay({
 	step,
 	arrived,
 	onWheelStep,
 	stopsLength,
 	query = {},
+	initialFocusKey = '',
+	onResolveFocusIndex,
 }) {
 	const { data: projects, error } = useProjects({
 		q: query.q,
@@ -174,24 +147,42 @@ export function ConnectedProjectsOverlay({
 
 	const slides = useMemo(() => {
 		const docs = Array.isArray(projects) ? projects : []
-		const mapped = docs.map((p, i) => {
-			const rawId = p.slug || p._id || p.id || p.title || `proj-${i + 1}`
-			const id = toSafeId(rawId, `proj-${i + 1}`)
-			return {
-				id, // stable, safe id for anchors & keys
-				title: p.title || "Untitled",
-				description: p.description || "",
-				associated: p.associated ?? null,
-				dateLabel: p.dateLabel ?? null,
-				skills: Array.isArray(p.skills) ? p.skills : [],
-				features: Array.isArray(p.features) ? p.features : [],
-				links: Array.isArray(p.links)
-					? p.links.map((l) => ({ label: l.label, href: l.href }))
-					: [],
-			}
-		})
+		const mapped = docs.map((p, i) => ({
+			_id: p._id,
+			id: p.id,
+			slug: p.slug,
+			title: p.title || "Untitled",
+			description: p.description || "",
+			associated: p.associated ?? null,
+			dateLabel: p.dateLabel ?? null,
+			skills: Array.isArray(p.skills) ? p.skills : [],
+			features: Array.isArray(p.features) ? p.features : [],
+			links: Array.isArray(p.links)
+				? p.links.map((l) => ({ label: l.label, href: l.href }))
+				: [],
+			_match: [
+				String(p.slug || '').toLowerCase(),
+				String(p.id || '').toLowerCase(),
+				String(p._id || '').toLowerCase(),
+				String(p.title || '').toLowerCase(),
+				toSafeId(p.title, `proj-${i+1}`),
+			].filter(Boolean),
+		}))
 		return stopsLength > 0 ? mapped.slice(0, stopsLength) : mapped
 	}, [projects, stopsLength])
+
+	const didResolveRef = useRef(false)
+	useEffect(() => {
+		if (didResolveRef.current) return
+		if (!slides.length) return
+		const key = String(initialFocusKey || '').toLowerCase().trim()
+		if (!key) return
+		const idx = slides.findIndex(s => s._match?.some(m => m === key))
+		if (idx >= 0) {
+			didResolveRef.current = true
+			onResolveFocusIndex?.(idx)
+		}
+	}, [slides, initialFocusKey, onResolveFocusIndex])
 
 	return (
 		<>
@@ -200,6 +191,7 @@ export function ConnectedProjectsOverlay({
 					Failed to load projects
 				</div>
 			)}
+
 			<Overlay
 				step={step}
 				arrived={arrived}

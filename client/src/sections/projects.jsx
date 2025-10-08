@@ -1,9 +1,9 @@
+// src/components/projects/Projects.jsx
 import React, { useEffect, useMemo, useState } from 'react'
 
 const BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
 const API_URL = `${BASE}/api/projects`
 
-// Use any of: slug, id, _id, title, or the computed safe id.
 const FEATURED = [
 	'agripredict',
 	'commercial-product-website',
@@ -22,6 +22,7 @@ function pickArray(json) {
 	if (Array.isArray(json?.data?.items)) return json.data.items
 	return []
 }
+
 function toSafeId(v, fb) {
 	return (
 		String(v ?? fb ?? '')
@@ -91,27 +92,27 @@ export default function Projects() {
 		return () => { canceled = true }
 	}, [])
 
-	// Map raw rows to items + matching keys
 	const mapped = useMemo(() => rows.map((r, i) => {
-		const id = toSafeId(r?.slug || r?.id || r?._id || r?.title, `proj-${i+1}`)
+		const keyBase = r?.slug || r?.id || r?._id || toSafeId(r?.title, `proj-${i + 1}`)
+		const focus = encodeURIComponent(String(keyBase).toLowerCase())
+		const href = `/projects?focus=${focus}`
+
 		const matchKeys = [
-			id,
 			String(r?.slug || '').toLowerCase(),
 			String(r?.id || '').toLowerCase(),
 			String(r?._id || '').toLowerCase(),
 			String(r?.title || '').toLowerCase(),
 		].filter(Boolean)
+
 		return {
-			key: id,
-			id,
+			key: String(keyBase),
 			title: r?.title || r?.name || 'Untitled',
 			desc: r?.description ?? r?.body ?? r?.desc ?? '',
-			href: `/projects#${encodeURIComponent(id)}`,
+			href,
 			matchKeys,
 		}
 	}), [rows])
 
-	// Hardcoded featuring: filter + preserve order from FEATURED
 	const featuredSet = new Set(FEATURED.map(s => s.toLowerCase()))
 	const featuredOrder = new Map(FEATURED.map((s, i) => [s.toLowerCase(), i]))
 
@@ -125,12 +126,10 @@ export default function Projects() {
 			})
 		: []
 
-	// If nothing featured (or FEATURED empty), just show latest N
 	const items = (featured.length ? featured : mapped).slice(0, MAX)
 
 	return (
 		<section
-			id="projects"
 			className="max-w-5xl mx-auto px-4 pb-12 text-white
 			[&_a]:!text-white [&_a:hover]:!text-white [&_a:focus]:!text-white [&_a:visited]:!text-white"
 		>

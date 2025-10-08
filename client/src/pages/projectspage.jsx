@@ -4,11 +4,19 @@ import { Canvas } from "@react-three/fiber"
 import Navbar from "../components/home/utils/navbar.jsx"
 import { CameraRig, RoomModel, SceneLights } from "../components/projects/index.jsx"
 import { ConnectedProjectsOverlay } from "../components/projects/overlay.jsx"
-import { getScene } from "../db/projectData.js"   // ✅ import from JS module
+import { getScene } from "../db/projectData.js"
 import GlobalLoader from '/src/components/comm/loader.jsx'
 
+function useFocusKey() {
+	if (typeof window === 'undefined') return ''
+	const sp = new URLSearchParams(window.location.search)
+	const q = sp.get('focus') || ''
+	const h = (window.location.hash || '').replace(/^#/, '')
+	return (q || h || '').toLowerCase()
+}
+
 export default function RoomShowcase() {
-	const { stops } = useMemo(() => getScene("roomTour"), [])   // ✅ no stopsData var
+	const { stops } = useMemo(() => getScene("roomTour"), [])
 
 	const [step, setStep] = useState(0)
 	const [arrived, setArrived] = useState(true)
@@ -16,6 +24,15 @@ export default function RoomShowcase() {
 	const next = useCallback((dir) => {
 		setArrived(false)
 		setStep((s) => Math.max(0, Math.min(stops.length - 1, s + dir)))
+	}, [stops.length])
+
+	const focusKey = useFocusKey()
+
+	const jumpTo = useCallback((index) => {
+		if (Number.isFinite(index)) {
+			setArrived(false)
+			setStep(Math.max(0, Math.min(stops.length - 1, index)))
+		}
 	}, [stops.length])
 
 	return (
@@ -35,6 +52,8 @@ export default function RoomShowcase() {
 				arrived={arrived}
 				onWheelStep={next}
 				stopsLength={stops.length}
+				initialFocusKey={focusKey}
+				onResolveFocusIndex={jumpTo}
 			/>
 		</div>
 	)
