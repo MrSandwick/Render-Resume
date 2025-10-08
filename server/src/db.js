@@ -9,7 +9,7 @@ export async function connectDB() {
 	// mongoose.set('debug', true)
 
 	try {
-		console.log('→ Connecting to Mongo:', redact(env.mongoUri))
+		console.log('→ Connecting to Mongo')
 		await mongoose.connect(env.mongoUri, {
 			autoIndex: true,
 			serverSelectionTimeoutMS: 8000 // fail fast if unreachable

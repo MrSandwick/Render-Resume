@@ -1,42 +1,19 @@
 // src/components/TechStack.jsx
 import { useEffect, useMemo, useState } from "react"
+import { useSkills } from "../../lib/useSkills"
 
 export default function TechStack() {
-	const [items, setItems] = useState([])
-	const [loading, setLoading] = useState(true)
-	const [error, setError] = useState("")
+	// fetch via hook
+	const { data: items, error, loading } = useSkills()
 	const [selected, setSelected] = useState("All")
 
-	// 1) Fetch from API
-	useEffect(() => {
-		let live = true
-		;(async () => {
-			try {
-				setLoading(true)
-				setError("")
-				const base = import.meta.env.VITE_API_URL || ""
-				const res = await fetch(`${base}/api/skills`)
-				if (!res.ok) throw new Error(`HTTP ${res.status}`)
-				const data = await res.json()
-				if (live) {
-					setItems(Array.isArray(data) ? data : [])
-				}
-			} catch (e) {
-				if (live) setError(e.message || "Failed to load skills")
-			} finally {
-				if (live) setLoading(false)
-			}
-		})()
-		return () => { live = false }
-	}, [])
-
-	// 2) Build categories dynamically from DB (+ All)
+	// 1) Build categories dynamically from DB (+ All)
 	const categories = useMemo(() => {
-		const set = new Set(items.map(s => s.category).filter(Boolean))
+		const set = new Set((items || []).map((s) => s.category).filter(Boolean))
 		return ["All", ...Array.from(set).sort()]
 	}, [items])
 
-	// 3) DOM-based filter (unchanged), but ensure “All” is applied on data load
+	// 2) DOM-based filter (unchanged)
 	const onClick = (cat) => {
 		setSelected(cat)
 		const root = document.getElementById("cards")
@@ -44,7 +21,7 @@ export default function TechStack() {
 		root.setAttribute("data-category", cat)
 		for (const el of root.children) {
 			const c = el.getAttribute("data-cat")
-			const show = (cat === "All" || c === cat)
+			const show = cat === "All" || c === cat
 			el.classList.toggle("hidden", !show)
 		}
 	}
@@ -53,7 +30,7 @@ export default function TechStack() {
 	useEffect(() => {
 		if (!loading && !error) onClick("All")
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [loading, error, items.length])
+	}, [loading, error, items?.length])
 
 	return (
 		<section id="tech" className="relative z-10 max-w-7xl mx-auto px-6 py-12">
@@ -74,7 +51,7 @@ export default function TechStack() {
 					</button>
 				))}
 				<span className="ml-auto text-xs opacity-70">
-					{loading ? "Loading…" : `${items.length} skills`}
+					{loading ? "Loading…" : `${items?.length || 0} skills`}
 				</span>
 			</div>
 
@@ -94,14 +71,14 @@ export default function TechStack() {
 			{!loading && error && (
 				<div className="p-4 rounded-xl border border-red-500/30 bg-red-950/30">
 					<p className="font-semibold">Failed to load skills</p>
-					<p className="text-sm opacity-80">{error}</p>
+					<p className="text-sm opacity-80">{String(error?.message || error)}</p>
 				</div>
 			)}
 
 			{/* Cards */}
 			{!loading && !error && (
 				<div id="cards" className="flex flex-wrap gap-6" data-category="All">
-					{items.map((t) => (
+					{(items || []).map((t) => (
 						<Card
 							key={t._id || t.name}
 							name={t.name}
@@ -110,7 +87,7 @@ export default function TechStack() {
 							icon={t.icon}
 						/>
 					))}
-					{items.length === 0 && (
+					{(items || []).length === 0 && (
 						<p className="opacity-70">No skills found.</p>
 					)}
 				</div>

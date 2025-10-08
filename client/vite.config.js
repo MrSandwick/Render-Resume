@@ -6,4 +6,12 @@ export default defineConfig({
   plugins: [
     react(),
     tailwind()],
+  server: {
+		proxy: {
+			'/api': {
+				target: 'http://localhost:5050', // your Node API
+				changeOrigin: true,
+			},
+		},
+	},
 })

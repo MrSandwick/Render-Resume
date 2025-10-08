@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
+// src/components/projects/ConnectedProjectsOverlay.jsx
+import React, { useEffect, useMemo, useRef } from "react"
+import { useProjects } from "../../lib/useProjects"
 import { motion, AnimatePresence } from "framer-motion"
 
 /* ------------------------------ UTIL: SAFE ID ----------------------------- */
@@ -9,15 +11,6 @@ function toSafeId(v, fallback) {
 			.replace(/[^a-z0-9]+/g, "-")
 			.replace(/^-+|-+$/g, "")
 	) || String(fallback ?? "")
-}
-
-/* -------------------------- FETCH HELPER (LOCAL) ------------------------- */
-async function fetchJSON(path) {
-	const base = import.meta.env.VITE_API_URL?.replace(/\/+$/, "") || ""
-	const url = `${base}${path.startsWith("/") ? path : `/${path}`}`
-	const res = await fetch(url, { headers: { Accept: "application/json" } })
-	if (!res.ok) throw new Error(`HTTP ${res.status}`)
-	return res.json()
 }
 
 /* ------------------------- PRESENTATIONAL OVERLAY ------------------------ */
@@ -164,15 +157,7 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 	)
 }
 
-/* ------------------------ CONNECTED WRAPPER (DB) ------------------------ */
-/* Usage:
-	<ConnectedProjectsOverlay
-		step={step}
-		arrived={arrived}
-		onWheelStep={next}
-		stopsLength={stops.length}
-	/>
-*/
+
 export function ConnectedProjectsOverlay({
 	step,
 	arrived,
@@ -180,49 +165,37 @@ export function ConnectedProjectsOverlay({
 	stopsLength,
 	query = {},
 }) {
-	const [slides, setSlides] = useState([])
-	const [err, setErr] = useState(null)
+	const { data: projects, error } = useProjects({
+		q: query.q,
+		skill: query.skill,
+		limit: query.limit,
+		sort: query.sort,
+	})
 
-	useEffect(() => {
-		let cancel = false
-		const params = new URLSearchParams()
-		if (query.q) params.set("q", query.q)
-		if (query.skill) params.set("skill", query.skill)
-		if (query.limit) params.set("limit", String(query.limit))
-		if (query.sort) params.set("sort", query.sort)
-
-		fetchJSON(`/api/projects${params.toString() ? `?${params}` : ""}`)
-			.then((docs) => {
-				if (cancel) return
-				const mapped = (Array.isArray(docs) ? docs : []).map((p, i) => {
-					const rawId = p.slug || p._id || p.id || p.title || `proj-${i + 1}`
-					const id = toSafeId(rawId, `proj-${i + 1}`)
-					return {
-						id, // stable, safe id for anchors & keys
-						title: p.title || "Untitled",
-						description: p.description || "",
-						associated: p.associated ?? null,
-						dateLabel: p.dateLabel ?? null,
-						skills: Array.isArray(p.skills) ? p.skills : [],
-						features: Array.isArray(p.features) ? p.features : [],
-						links: Array.isArray(p.links)
-							? p.links.map((l) => ({ label: l.label, href: l.href }))
-							: [],
-					}
-				})
-				// Keep slides count aligned with camera stops if provided
-				setSlides(stopsLength > 0 ? mapped.slice(0, stopsLength) : mapped)
-			})
-			.catch((e) => !cancel && setErr(e))
-
-		return () => {
-			cancel = true
-		}
-	}, [stopsLength, query.q, query.skill, query.limit, query.sort])
+	const slides = useMemo(() => {
+		const docs = Array.isArray(projects) ? projects : []
+		const mapped = docs.map((p, i) => {
+			const rawId = p.slug || p._id || p.id || p.title || `proj-${i + 1}`
+			const id = toSafeId(rawId, `proj-${i + 1}`)
+			return {
+				id, // stable, safe id for anchors & keys
+				title: p.title || "Untitled",
+				description: p.description || "",
+				associated: p.associated ?? null,
+				dateLabel: p.dateLabel ?? null,
+				skills: Array.isArray(p.skills) ? p.skills : [],
+				features: Array.isArray(p.features) ? p.features : [],
+				links: Array.isArray(p.links)
+					? p.links.map((l) => ({ label: l.label, href: l.href }))
+					: [],
+			}
+		})
+		return stopsLength > 0 ? mapped.slice(0, stopsLength) : mapped
+	}, [projects, stopsLength])
 
 	return (
 		<>
-			{err && (
+			{error && (
 				<div className="absolute top-14 left-1/2 -translate-x-1/2 text-red-300 text-xs bg-red-900/30 px-2 py-1 rounded">
 					Failed to load projects
 				</div>
