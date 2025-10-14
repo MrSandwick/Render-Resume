@@ -11,6 +11,7 @@ export default defineConfig({
 			'/api': {
 				target: 'http://localhost:5050', // your Node API
 				changeOrigin: true,
+				rewrite: p => p.replace(/^\/api/, '')
 			},
 		},
 	},

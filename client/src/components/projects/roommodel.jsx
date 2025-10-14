@@ -1,23 +1,12 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { useGLTF } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
 
-export default function RoomModel({ scale = 1 }) {
+export default function RoomModel({ scale = 1, debug = true }) {
 	const { scene } = useGLTF('/models/room.glb')
 	const inst = useMemo(() => scene.clone(true), [scene])
-
-	useMemo(() => {
-		const box = new THREE.Box3().setFromObject(inst)
-		const size = new THREE.Vector3()
-		box.getSize(size)
-		const longest = Math.max(size.x, size.y, size.z) || 1
-		const s = (2.5 / longest) * scale
-		inst.scale.setScalar(s)
-
-		const center = new THREE.Vector3()
-		box.getCenter(center)
-		inst.position.sub(center)
-	}, [inst, scale])
+	const infoDivRef = useRef()
 
 	return <primitive object={inst} />
 }

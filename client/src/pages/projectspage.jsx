@@ -41,9 +41,7 @@ export default function RoomShowcase() {
 			<Navbar />
 			<Canvas dpr={[1, 2]} camera={{ fov: 45, near: 0.1, far: 100000 }} gl={{ antialias: true, alpha: true }}>
 				<SceneLights />
-				<group position={[0, 0, 0]}>
-					<RoomModel />
-				</group>
+				<RoomModel/>
 				<CameraRig stops={stops} index={step} onArrive={(ok) => ok && setArrived(true)} />
 			</Canvas>
 

@@ -4,6 +4,8 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-rate-limit": "^8.1.0",
+    "firebase-admin": "^13.5.0",
+    "firebase-functions": "^6.5.0",
     "helmet": "^8.1.0",
     "mongoose": "^8.18.3",
     "nodemailer": "^7.0.6",
@@ -12,7 +14,7 @@
   "devDependencies": {
     "nodemon": "^3.1.10"
   },
-  "name": "backend",
+  "name": "server",
   "version": "1.0.0",
   "description": "MERN backend for portfolio",
   "license": "MIT",

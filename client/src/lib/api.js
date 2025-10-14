@@ -1,21 +1,19 @@
-// src/lib/api.js
 const BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
 
 async function getJSON(path, { signal } = {}) {
-	const url = `${BASE}${path.startsWith('/') ? path : `/${path}`}`
-	const res = await fetch(url, {
+	const res = await fetch(`${BASE}${path.startsWith('/') ? path : `/${path}`}`, {
 		method: 'GET',
 		headers: { Accept: 'application/json' },
 		signal,
 	})
-	let data = null
-	try { data = await res.json() } catch {}
-	if (!res.ok) {
-		const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`
-		throw new Error(msg)
-	}
+
+	const data = await res.json().catch(() => null)
+
+	if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`)
+
 	return data
 }
+
 
 function q(params = {}) {
 	const usp = new URLSearchParams()
@@ -36,7 +34,6 @@ export function getSkills(opts = {}) {
 	return getJSON('/api/skills', opts)
 }
 
-/* already have: sendContact(form) from earlier */
 export async function sendContact({ name, email, message, subject = '', company = '' }) {
 	const res = await fetch(`${BASE}/api/contact`, {
 		method: 'POST',

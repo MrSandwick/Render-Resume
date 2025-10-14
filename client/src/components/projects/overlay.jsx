@@ -1,15 +1,16 @@
-// src/components/projects/overlay.jsx (a.k.a. ConnectedProjectsOverlay.jsx)
+// src/components/projects/overlay.jsx (ConnectedProjectsOverlay.jsx)
 import React, { useEffect, useMemo, useRef } from "react"
 import { useProjects } from "../../lib/useProjects"
 import { motion, AnimatePresence } from "framer-motion"
 
-function toSafeId(v, fb) {
+/* ------------------------------- UTILITIES ------------------------------ */
+export function toSafeId(v, fb) {
 	return (
-		String(v ?? fb ?? '')
+		String(v ?? fb ?? "")
 			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, '-')
-			.replace(/^-+|-+$/g, '')
-	) || String(fb ?? '')
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/^-+|-+$/g, "")
+	) || String(fb ?? "")
 }
 
 /* ------------------------- PRESENTATIONAL OVERLAY ------------------------ */
@@ -24,24 +25,87 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 		const el = containerRef.current
 		if (!el || !len) return
 
+		const COOLDOWN_MS = 150
+		const now = () => performance.now()
+
 		const onWheel = (e) => {
 			e.preventDefault()
-			const t = performance.now()
+			const t = now()
 			if (t < cooldown.current) return
 			const dir = Math.sign(e.deltaY)
-			if (dir !== 0) {
+			if (!dir) return
+
+			const atFirst = step <= 0
+			const atLast = step >= len - 1
+			let delta = 0
+			if (dir > 0) delta = atLast ? -(len - 1) : 1
+			else delta = atFirst ? (len - 1) : -1
+
+			onWheelStep(delta)
+			cooldown.current = t + COOLDOWN_MS
+		}
+
+		const SWIPE_THRESHOLD = 28
+		let startX = 0, startY = 0, tookOver = false, active = false
+
+		const onTouchStart = (e) => {
+			if (e.touches?.length !== 1) return
+			const { clientX, clientY } = e.touches[0]
+			startX = clientX
+			startY = clientY
+			tookOver = false
+			active = true
+		}
+
+		const onTouchMove = (e) => {
+			if (!active) return
+			const { clientX, clientY } = e.touches[0]
+			const dx = clientX - startX
+			const dy = clientY - startY
+			if (!tookOver && Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > SWIPE_THRESHOLD) {
+				e.preventDefault()
+				tookOver = true
+			}
+		}
+
+		const onTouchEnd = (e) => {
+			if (!active) return
+			active = false
+			if (!tookOver) return
+
+			const t = now()
+			if (t < cooldown.current) return
+
+			const touch = e.changedTouches?.[0]
+			const endY = touch ? touch.clientY : startY
+			const dy = endY - startY
+
+			if (Math.abs(dy) >= SWIPE_THRESHOLD) {
+				const dir = Math.sign(-dy)
 				const atFirst = step <= 0
 				const atLast = step >= len - 1
 				let delta = 0
 				if (dir > 0) delta = atLast ? -(len - 1) : 1
-				else delta = atFirst ? (len - 1) : -1
-				onWheelStep(delta)
-				cooldown.current = t + 150
+				else if (dir < 0) delta = atFirst ? (len - 1) : -1
+
+				if (delta !== 0) {
+					onWheelStep(delta)
+					cooldown.current = t + COOLDOWN_MS
+				}
 			}
 		}
 
 		el.addEventListener("wheel", onWheel, { passive: false })
-		return () => el.removeEventListener("wheel", onWheel)
+		el.addEventListener("touchstart", onTouchStart, { passive: true })
+		el.addEventListener("touchmove", onTouchMove, { passive: false })
+		el.addEventListener("touchend", onTouchEnd, { passive: true })
+
+		return () => {
+			el.removeEventListener("wheel", onWheel)
+			el.removeEventListener("touchstart", onTouchStart)
+			el.removeEventListener("touchmove", onTouchMove)
+			el.removeEventListener("touchend", onTouchEnd)
+		}
 	}, [onWheelStep, step, len])
 
 	const slide = len ? slides[safeIndex] : null
@@ -52,11 +116,15 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 	const links = Array.isArray(slide?.links) ? slide.links : []
 
 	return (
-		<div ref={containerRef} className="pointer-events-auto absolute inset-0 grid place-items-center select-none">
+		<div
+			ref={containerRef}
+			className="pointer-events-auto absolute inset-0 grid place-items-center select-none"
+			style={{ touchAction: "none" }}
+		>
 			<div className="w-full max-w-3xl px-6">
 				<div className="flex items-center justify-between text-xs uppercase tracking-widest opacity-70 mb-1">
 					<span className="font-semibold">Step {len ? safeIndex + 1 : 0} / {len}</span>
-					<span className="font-semibold">Scroll to navigate</span>
+					<span className="font-semibold">Scroll / Swipe to navigate</span>
 				</div>
 
 				<AnimatePresence mode="popLayout">
@@ -129,55 +197,29 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 	)
 }
 
+/* ----------------------- CONNECTED (API ONLY) ---------------------- */
 export function ConnectedProjectsOverlay({
 	step,
 	arrived,
 	onWheelStep,
-	stopsLength,
 	query = {},
-	initialFocusKey = '',
+	initialFocusKey = "",
 	onResolveFocusIndex,
 }) {
-	const { data: projects, error } = useProjects({
+	const { data: slides = [], error } = useProjects({
 		q: query.q,
 		skill: query.skill,
 		limit: query.limit,
 		sort: query.sort,
 	})
 
-	const slides = useMemo(() => {
-		const docs = Array.isArray(projects) ? projects : []
-		const mapped = docs.map((p, i) => ({
-			_id: p._id,
-			id: p.id,
-			slug: p.slug,
-			title: p.title || "Untitled",
-			description: p.description || "",
-			associated: p.associated ?? null,
-			dateLabel: p.dateLabel ?? null,
-			skills: Array.isArray(p.skills) ? p.skills : [],
-			features: Array.isArray(p.features) ? p.features : [],
-			links: Array.isArray(p.links)
-				? p.links.map((l) => ({ label: l.label, href: l.href }))
-				: [],
-			_match: [
-				String(p.slug || '').toLowerCase(),
-				String(p.id || '').toLowerCase(),
-				String(p._id || '').toLowerCase(),
-				String(p.title || '').toLowerCase(),
-				toSafeId(p.title, `proj-${i+1}`),
-			].filter(Boolean),
-		}))
-		return stopsLength > 0 ? mapped.slice(0, stopsLength) : mapped
-	}, [projects, stopsLength])
-
 	const didResolveRef = useRef(false)
 	useEffect(() => {
 		if (didResolveRef.current) return
 		if (!slides.length) return
-		const key = String(initialFocusKey || '').toLowerCase().trim()
+		const key = String(initialFocusKey || "").toLowerCase().trim()
 		if (!key) return
-		const idx = slides.findIndex(s => s._match?.some(m => m === key))
+		const idx = slides.findIndex((s) => s._match?.some((m) => m === key))
 		if (idx >= 0) {
 			didResolveRef.current = true
 			onResolveFocusIndex?.(idx)
@@ -185,19 +227,11 @@ export function ConnectedProjectsOverlay({
 	}, [slides, initialFocusKey, onResolveFocusIndex])
 
 	return (
-		<>
-			{error && (
-				<div className="absolute top-14 left-1/2 -translate-x-1/2 text-red-300 text-xs bg-red-900/30 px-2 py-1 rounded">
-					Failed to load projects
-				</div>
-			)}
-
-			<Overlay
-				step={step}
-				arrived={arrived}
-				slides={slides}
-				onWheelStep={onWheelStep}
-			/>
-		</>
+		<Overlay
+			step={step}
+			arrived={arrived}
+			slides={slides}
+			onWheelStep={onWheelStep}
+		/>
 	)
 }

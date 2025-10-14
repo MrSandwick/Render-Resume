@@ -8,18 +8,10 @@ function dampVector(current, target, lambda, dt) {
 }
 
 export default function CameraRig({ stops, index, onArrive }) {
-	const { camera } = useThree()
+	const { camera, gl } = useThree()
 	const desiredPos = useRef(new THREE.Vector3())
 	const desiredTarget = useRef(new THREE.Vector3())
 	const lookTarget = useRef(new THREE.Vector3())
-
-	useEffect(() => {
-		if (!stops?.length) return
-		const s = stops[0]
-		camera.position.fromArray(s.position)
-		lookTarget.current.fromArray(s.target)
-		camera.lookAt(lookTarget.current)
-	}, [camera, stops])
 
 	useFrame((_, dt) => {
 		const s = stops[index]
@@ -38,7 +30,7 @@ export default function CameraRig({ stops, index, onArrive }) {
 			lookTarget.current.distanceTo(desiredTarget.current) < 0.02
 
 		onArrive?.(arrived)
-	})
+})
 
 	return null
 }

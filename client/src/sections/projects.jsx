@@ -1,27 +1,11 @@
 // src/components/projects/Projects.jsx
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
+import { useProjects } from '../lib/useProjects.jsx'
 
-const BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
-const API_URL = `${BASE}/api/projects`
-
-const FEATURED = [
-	'agripredict',
-	'commercial-product-website',
-	'car-dealership-network',
-	'user-group-script',
-	'gittool-c',
-	'network-monitor-python',
-]
-
-function pickArray(json) {
-	if (Array.isArray(json)) return json
-	if (Array.isArray(json?.data)) return json.data
-	if (Array.isArray(json?.projects)) return json.projects
-	if (Array.isArray(json?.items)) return json.items
-	if (Array.isArray(json?.results)) return json.results
-	if (Array.isArray(json?.data?.items)) return json.data.items
-	return []
-}
+const FEATURED = (import.meta.env.VITE_FEATURED || '')
+	.split(',')
+	.map(f => f.trim().toLowerCase())
+	.filter(Boolean)
 
 function toSafeId(v, fb) {
 	return (
@@ -67,30 +51,7 @@ function ProjectCard({ title, desc, href }) {
 }
 
 export default function Projects() {
-	const [rows, setRows] = useState([])
-	const [loading, setLoading] = useState(true)
-	const [error, setError] = useState(null)
-	const MAX = 6
-
-	useEffect(() => {
-		let canceled = false
-		;(async () => {
-			try {
-				setLoading(true)
-				setError(null)
-				const res = await fetch(API_URL, { headers: { Accept: 'application/json' } })
-				if (!res.ok) throw new Error(`HTTP ${res.status}`)
-				const json = await res.json()
-				if (canceled) return
-				setRows(pickArray(json))
-			} catch (e) {
-				if (!canceled) setError(e?.message || 'Failed to load')
-			} finally {
-				if (!canceled) setLoading(false)
-			}
-		})()
-		return () => { canceled = true }
-	}, [])
+	const { data: rows, loading, error } = useProjects()
 
 	const mapped = useMemo(() => rows.map((r, i) => {
 		const keyBase = r?.slug || r?.id || r?._id || toSafeId(r?.title, `proj-${i + 1}`)
@@ -113,7 +74,7 @@ export default function Projects() {
 		}
 	}), [rows])
 
-	const featuredSet = new Set(FEATURED.map(s => s.toLowerCase()))
+	const featuredSet = new Set(FEATURED)
 	const featuredOrder = new Map(FEATURED.map((s, i) => [s.toLowerCase(), i]))
 
 	const featured = FEATURED.length
@@ -126,6 +87,7 @@ export default function Projects() {
 			})
 		: []
 
+	const MAX = 6
 	const items = (featured.length ? featured : mapped).slice(0, MAX)
 
 	return (
@@ -141,12 +103,12 @@ export default function Projects() {
 				</div>
 			)}
 
-			{!loading && error && <div className="text-sm text-red-300">Couldn’t load projects: {error}</div>}
+			{!loading && error && <div className="text-sm text-red-300">Couldn’t load projects: {error?.message || error}</div>}
 			{!loading && !error && !items.length && <div className="text-sm opacity-70">No projects found.</div>}
 
 			{!loading && !error && items.length > 0 && (
 				<div className="grid gap-4 sm:grid-cols-2">
-					{items.map((p) => (
+					{items.map(p => (
 						<ProjectCard key={p.key} title={p.title} desc={p.desc} href={p.href} />
 					))}
 				</div>
