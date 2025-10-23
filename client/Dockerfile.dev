@@ -1,0 +1,17 @@
+# syntax=docker/dockerfile:1.7
+
+FROM node:22-alpine
+ENV NODE_ENV=development
+WORKDIR /app
+
+# Only install client deps (npm)
+COPY ./package.json ./package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm \
+	npm ci
+
+# App source last for better caching
+COPY . .
+
+# Vite dev server reachable on LAN
+EXPOSE 5173
+CMD ["npm","run","dev","--","--host","0.0.0.0"]

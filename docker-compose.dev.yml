@@ -1,0 +1,73 @@
+services:
+  mongo:
+    image: mongo:7
+    command:
+      - "mongod"
+      - "--quiet"
+    container_name: myweb-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD","mongosh","--quiet","--eval","db.runCommand({ ping: 1 }).ok"]
+      interval: 60s
+      timeout: 5s
+      retries: 5
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: myweb-mailhog
+    ports:
+      - "8025:8025"   # UI
+      - "1025:1025"   # SMTP
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    env_file:
+      - ./server/.env
+    container_name: myweb-api
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: "5050"
+      CLIENT_ORIGIN: "http://localhost:5173"
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_SECURE: "false"
+    volumes:
+      - ./server:/srv
+      - api-node-mods:/srv/node_modules
+    ports:
+      - "5050:5050"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    container_name: myweb-web
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: http://localhost:5050
+    volumes:
+      - ./client:/app
+      - web-node-mods:/app/node_modules
+      - web-vite-cache:/app/.vite
+    ports:
+      - "5173:5173"
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
+  web-node-mods:
+  web-vite-cache:
+  api-node-mods:

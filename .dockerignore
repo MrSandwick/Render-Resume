@@ -1,0 +1,21 @@
+# Root
+.git
+node_modules
+npm-debug.log*
+.DS_Store
+
+# Client
+client/node_modules
+client/dist
+client/.vite
+
+# Server
+server/node_modules
+server/dist
+
+# Firebase / misc
+.firebase
+.firebaserc
+firebase.json
+storage.rules
+firestore.rules

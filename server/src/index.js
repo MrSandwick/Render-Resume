@@ -62,9 +62,9 @@ app.use((err, _req, res, _next) => {
 })
 
 // ❗ app.listen for local dev
-// app.listen(env.port, () => {
-// 	console.log(`✓ API on http://localhost:${env.port}`)
-// })
+app.listen(env.port, () => {
+	console.log(`✓ API on http://localhost:${env.port}`)
+})
 
 // ❗ no app.listen in Cloud Functions
-export const server = onRequest({ region: 'us-central1' }, app)
+// export const server = onRequest({ region: 'us-central1' }, app)

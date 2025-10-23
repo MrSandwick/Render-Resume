@@ -1,0 +1,17 @@
+# syntax=docker/dockerfile:1.7
+
+FROM node:22-alpine
+ENV NODE_ENV=development
+WORKDIR /srv
+
+# Install server deps
+COPY ./package.json ./package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm \
+	npm ci
+
+# Source last
+COPY . .
+
+EXPOSE 5050
+# Use nodemon if available, else npm run dev, else node server.js
+CMD ["sh","-lc","npx --yes nodemon --version >/dev/null 2>&1 && npx nodemon || npm run dev || node src/index.js"]
