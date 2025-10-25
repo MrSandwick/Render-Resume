@@ -2,15 +2,17 @@
 
 ![HERO](image.png)
 
-An interactive personal portfolio showcasing projects, skills, and contact via a **React (Vite) + Tailwind + Three.js** frontend and an **Express API** on **Firebase Functions (v2)** with **MongoDB Atlas**.  
-Includes local testing with **Firebase Emulators**, a rate-limited **SMTP** contact form, and optional **Cloudflare** custom domain.
+An interactive personal portfolio showcasing projects, skills, and contact via a **React (Vite) + Tailwind + Three.js** frontend and an **Express API** on **Firebase Functions (v2)** with **MongoDB Atlas**.
+Includes dockerized local dev (**Dockerfiles + Docker Compose** for client, server, **MongoDB, MailHog**), Firebase Emulators, **GitHub Actions CI/CD to Firebase Hosting** (PR preview channels + production), a rate-limited SMTP contact form, and optional Cloudflare custom domain.
 
 ## ✨ Features
 
-- 3D interactions via **@react-three/fiber** + **drei** (GLTF models, decals, lights), **Responsive layout**
-- **Projects** & **Skills** served from **Express + MongoDB Atlas**
-- **Contact** endpoint with **rate limiting** and **SMTP** (Nodemailer)
-- **Firebase Hosting** rewrites to `/api/**` (same paths for local & prod)
+- 3D interactions via **@react-three/fiber** + **drei** (GLTF models, decals, lights); **responsive layout**
+- **Projects** & **Skills** served from **Express + MongoDB Atlas (Mongoose)**
+- **Contact** endpoint with **rate limiting** and **SMTP** (Nodemailer); **MailHog** in dev
+- **Dockerized dev** with **Dockerfiles** + **Docker Compose** (client, functions, MongoDB, MailHog, optional Mongo Express)
+- **Firebase Emulators** for local parity; **Hosting rewrites** to `/api/**` (same paths for local & prod)
+- **GitHub Actions CI/CD**: install → test → build → deploy (PR previews + production)
 - Test on real phones over LAN with Vite `--host`
 
 ---
@@ -18,38 +20,49 @@ Includes local testing with **Firebase Emulators**, a rate-limited **SMTP** cont
 ## Tech Stack
 
 - **Frontend:** React 18, Vite, Tailwind CSS, Framer Motion, Three.js (@react-three/fiber, @react-three/drei)
-- **Backend:** Node 22, Express, Firebase Functions v2 (`onRequest`)
-- **Database:** MongoDB Atlas (Mongoose), Mongo Compass, Postman
-- **Infra:** Firebase Hosting + Functions; optional Cloudflare DNS for custom domain
+- **Backend:** Node 22, Express, Firebase Functions v2
+- **Database:** MongoDB Atlas (Mongoose); tools: Mongo Compass, Postman
+- **Infra & DevOps:** Firebase Hosting + Functions, **Docker** + **Docker Compose**, **Firebase Emulators**, **GitHub Actions** (CI/CD), optional 
+- **Cloudflare** DNS, optional **Mongo Express** & **MailHog** (dev)
+
 
 
 ## Project Structure
 ```bash
 myweb/
-│── client/                       # React + Vite frontend
-│   ├── public/                   # static assets (icons, models, favicon)
+│── client/                        # React + Vite frontend
+│   ├── Dockerfile                 # client image (dev/prod)
+│   ├── .env.dev               # VITE_* samples for local dev
+│   ├── public/                    # static assets (icons, GLTF models, favicon)
 │   └── src/
-│       ├── components/           # UI, 3D canvases, overlays
-│       ├── pages/                # route components
-│       ├── lib/                  # hooks (useProjects, useSkills), helpers
-│       └── main.jsx              # app entry
+│       ├── components/            # UI, 3D canvases, overlays
+│       ├── pages/                 # route components
+│       ├── lib/                   # hooks (useProjects, useSkills), helpers
+│       └── main.jsx               # app entry
 │
-│── server/                       # Express app for Firebase Functions v2
+│── server/                        # Express app for Firebase Functions v2
+│   ├── Dockerfile                 # functions dev container
+│   ├── package.json               # deployed via firebase.json "functions.source"
 │   └── src/
-│       ├── env.js                # env mapping/validation
-│       ├── db.js                 # Mongo connection (Mongoose)
+│       ├── env.js                 # env mapping/validation
+│       ├── db.js                  # Mongo connection (Mongoose)
 │       ├── routes/
-│       │   ├── projects.js       # GET /api/projects
-│       │   ├── skills.js         # GET /api/skills
-│       │   └── contact.js        # POST /api/contact (rate-limited)
-│       ├── utils/mailer.js       # Nodemailer SMTP
-│       └── index.js              # express -> onRequest handler
+│       │   ├── projects.js        # GET /api/projects
+│       │   ├── skills.js          # GET /api/skills
+│       │   └── contact.js         # POST /api/contact (rate-limited)
+│       ├── utils/mailer.js        # Nodemailer SMTP
+│       └── index.js               # express -> onRequest handler
 │
-│── firebase.json                 # Custom
-│── .firebaserc                   # Custom
-│── .env                          # local environment (CUSTOM)
-│── package.json
-│── readme.md                     # project documentation (this file)
+│── .github/
+│   └── workflows/
+│       └── firebase.yml           # GitHub Actions: build/test + Firebase deploy (previews/prod)
+│
+│── docker-compose.yml             # client, functions, MongoDB, MailHog, optional Mongo Express
+│── .dockerignore                  # ignore node_modules, build artifacts, secrets
+│── firebase.json                  # Hosting rewrites, Emulators, Functions source
+│── .firebaserc                    # Firebase project aliases
+│── package.json                   # workspace/root scripts (optional)
+│── README.md                      # project docs (this file)
 ```
 
 ## Key Notes
@@ -130,6 +143,6 @@ CLIENT_ORIGIN=http://localhost:5173
 docker compose -f docker-compose.dev.yml up -d --build #from root
 ```
 
-3. Services
-Web (Vite): http://localhost:5173
+3. Services <br>
+Web (Vite): http://localhost:5173 <br>
 API: http://localhost:5050
