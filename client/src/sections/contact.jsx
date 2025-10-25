@@ -1,3 +1,4 @@
+// tabs indentation
 import React from 'react'
 import StarsCanvas from '../components/home/contact/starscanvas'
 import ContactsCard from '../components/home/contact/contactcard'
@@ -20,7 +21,12 @@ export default function ContactSection() {
 					<EmailFormCard />
 					<ContactsCard />
 				</div>
-				<ConCanvas />
+
+				{/* Responsive ConCanvas: grows with viewport, with sensible bounds */}
+				<ConCanvas className="w-full min-h-[300px] h-[44vh] sm:h-[52vh] md:h-[60vh] lg:h-[68vh] xl:h-[72vh] max-h-[80vh]" />
+				{/* Alt (aspect-ratio approach):
+				<ConCanvas className="w-full aspect-[4/3] md:aspect-[16/10]" />
+				*/}
 			</div>
 		</section>
 	)
