@@ -1,6 +1,6 @@
 # MyWebsite — MERN Portfolio with Three.js & Firebase
 
-![HERO](heroReadMe.png.png)
+![HERO](heroReadMe.png)
 
 An interactive personal portfolio showcasing projects, skills, and contact via a **React (Vite) + Tailwind + Three.js** frontend and an **Express API** on **Firebase Functions (v2)** with **MongoDB Atlas**.
 Includes dockerized local dev (**Dockerfiles + Docker Compose** for client, server, **MongoDB, MailHog**), Firebase Emulators, **GitHub Actions CI/CD to Firebase Hosting** (PR preview channels + production), a rate-limited SMTP contact form, and optional Cloudflare custom domain.
