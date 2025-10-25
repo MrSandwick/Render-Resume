@@ -15,7 +15,6 @@ Includes dockerized local dev (**Dockerfiles + Docker Compose** for client, serv
 - **GitHub Actions CI/CD**: install → test → build → deploy (PR previews + production)
 - Test on real phones over LAN with Vite `--host`
 
----
 
 ## Tech Stack
 
