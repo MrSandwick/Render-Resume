@@ -6,15 +6,17 @@ import GlobalLoader from '/src/components/comm/loader.jsx'
 
 export default function TechPage() {
 	return (
-		<div className="relative w-full min-h-screen  bg-black text-whiter text-center">
+		<div className="relative w-full min-h-screen  bg-black text-whiter">
 			<GlobalLoader />
-			<Navbar />
+			<Navbar/>		
 			<Techback />
-			<h1 className="text-3xl font-bold">My Tech Stack</h1>
-			<p className="opacity-80">
-				Here I can describe the tools and technologies I use in detail.
-			</p>
-			<Techcard />
+			<main className="text-center">
+				<h1 className="text-3xl font-bold">My Tech Stack</h1>
+				<p className="opacity-80">
+					Here I can describe the tools and technologies I use in detail.
+				</p>
+				<Techcard />
+			</main>
 
 			<ScrollTopButton />
 		</div>
