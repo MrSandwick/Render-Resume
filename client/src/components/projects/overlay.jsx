@@ -14,16 +14,17 @@ export function toSafeId(v, fb) {
 }
 
 /* ------------------------- PRESENTATIONAL OVERLAY ------------------------ */
-export default function Overlay({ step, arrived, slides, onWheelStep }) {
+export default function Overlay({ step, arrived, slides, onWheelStep, stopsLength }) {
 	const containerRef = useRef(null)
 	const cooldown = useRef(0)
 
 	const len = Array.isArray(slides) ? slides.length : 0
-	const safeIndex = len > 0 ? ((step % len) + len) % len : 0
+	const effectiveLen = stopsLength ? Math.min(len, stopsLength) : len
+	const safeIndex = effectiveLen > 0 ? ((step % effectiveLen) + effectiveLen) % effectiveLen : 0
 
 	useEffect(() => {
 		const el = containerRef.current
-		if (!el || !len) return
+		if (!el || !effectiveLen) return
 
 		const COOLDOWN_MS = 150
 		const now = () => performance.now()
@@ -36,10 +37,10 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 			if (!dir) return
 
 			const atFirst = step <= 0
-			const atLast = step >= len - 1
+			const atLast = step >= effectiveLen - 1
 			let delta = 0
-			if (dir > 0) delta = atLast ? -(len - 1) : 1
-			else delta = atFirst ? (len - 1) : -1
+			if (dir > 0) delta = atLast ? -(effectiveLen - 1) : 1
+			else delta = atFirst ? (effectiveLen - 1) : -1
 
 			onWheelStep(delta)
 			cooldown.current = t + COOLDOWN_MS
@@ -83,10 +84,10 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 			if (Math.abs(dy) >= SWIPE_THRESHOLD) {
 				const dir = Math.sign(-dy)
 				const atFirst = step <= 0
-				const atLast = step >= len - 1
+				const atLast = step >= effectiveLen - 1
 				let delta = 0
-				if (dir > 0) delta = atLast ? -(len - 1) : 1
-				else if (dir < 0) delta = atFirst ? (len - 1) : -1
+				if (dir > 0) delta = atLast ? -(effectiveLen - 1) : 1
+				else if (dir < 0) delta = atFirst ? (effectiveLen - 1) : -1
 
 				if (delta !== 0) {
 					onWheelStep(delta)
@@ -106,7 +107,7 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 			el.removeEventListener("touchmove", onTouchMove)
 			el.removeEventListener("touchend", onTouchEnd)
 		}
-	}, [onWheelStep, step, len])
+	}, [onWheelStep, step, effectiveLen])
 
 	const slide = len ? slides[safeIndex] : null
 
@@ -123,7 +124,7 @@ export default function Overlay({ step, arrived, slides, onWheelStep }) {
 		>
 			<div className="w-full max-w-3xl px-6">
 				<div className="flex items-center justify-between text-xs uppercase tracking-widest opacity-70 mb-1">
-					<span className="font-semibold">Step {len ? safeIndex + 1 : 0} / {len}</span>
+					<span className="font-semibold">Step {effectiveLen ? safeIndex + 1 : 0} / {effectiveLen}</span>
 					<span className="font-semibold">Scroll / Swipe to navigate</span>
 				</div>
 
@@ -202,6 +203,7 @@ export function ConnectedProjectsOverlay({
 	step,
 	arrived,
 	onWheelStep,
+	stopsLength,
 	query = {},
 	initialFocusKey = "",
 	onResolveFocusIndex,
@@ -219,7 +221,12 @@ export function ConnectedProjectsOverlay({
 		if (!slides.length) return
 		const key = String(initialFocusKey || "").toLowerCase().trim()
 		if (!key) return
-		const idx = slides.findIndex((s) => s._match?.some((m) => m === key))
+		const idx = slides.findIndex((s) => {
+			const candidates = [s?._id, s?.slug, s?.id, s?.title, toSafeId(s?.title)]
+				.filter(Boolean)
+				.map((v) => String(v).toLowerCase())
+			return candidates.includes(key)
+		})
 		if (idx >= 0) {
 			didResolveRef.current = true
 			onResolveFocusIndex?.(idx)
@@ -232,6 +239,7 @@ export function ConnectedProjectsOverlay({
 			arrived={arrived}
 			slides={slides}
 			onWheelStep={onWheelStep}
+			stopsLength={stopsLength}
 		/>
 	)
 }

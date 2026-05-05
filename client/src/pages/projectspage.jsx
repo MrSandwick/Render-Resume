@@ -1,5 +1,6 @@
 // src/pages/RoomShowcase.jsx
 import React, { useMemo, useState, useCallback } from "react"
+import { useSearchParams } from "react-router-dom"
 import { Canvas } from "@react-three/fiber"
 import Navbar from "../components/home/utils/navbar.jsx"
 import { CameraRig, RoomModel, SceneLights } from "../components/projects/index.jsx"
@@ -8,10 +9,9 @@ import { getScene } from "../db/projectData.js"
 import GlobalLoader from '/src/components/comm/loader.jsx'
 
 function useFocusKey() {
-	if (typeof window === 'undefined') return ''
-	const sp = new URLSearchParams(window.location.search)
-	const q = sp.get('focus') || ''
-	const h = (window.location.hash || '').replace(/^#/, '')
+	const [params] = useSearchParams()
+	const q = params.get('focus') || ''
+	const h = (typeof window !== 'undefined' ? window.location.hash : '').replace(/^#/, '')
 	return (q || h || '').toLowerCase()
 }
 
