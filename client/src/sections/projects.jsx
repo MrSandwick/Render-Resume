@@ -1,5 +1,6 @@
 // src/components/projects/Projects.jsx
 import React, { useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { useProjects } from '../lib/useProjects.jsx'
 
 const FEATURED = (import.meta.env.VITE_FEATURED || '')
@@ -28,8 +29,8 @@ function Skeleton() {
 
 function ProjectCard({ title, desc, href }) {
 	return (
-		<a
-			href={href}
+		<Link
+			to={href}
 			className="group block rounded-xl border border-white/10 bg-white/5 p-5 transition
 			        	hover:bg-white/10 hover:border-white/20 hover:shadow-md
 			        	focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
@@ -46,7 +47,7 @@ function ProjectCard({ title, desc, href }) {
 					<path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
 				</svg>
 			</div>
-		</a>
+		</Link>
 	)
 }
 
@@ -115,8 +116,8 @@ export default function Projects() {
 			)}
 
 			<div className="mt-6 flex justify-end">
-				<a
-					href="/projects"
+				<Link
+					to="/projects"
 					className="inline-flex items-center gap-2 text-sm font-medium opacity-90 hover:opacity-100
 					        	border border-white/10 rounded-xl px-4 py-2 bg-white/5 hover:bg-white/10 transition"
 					aria-label="View all projects"
@@ -125,7 +126,7 @@ export default function Projects() {
 					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="stroke-white/90">
 						<path d="M5 12h14M13 5l7 7-7 7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
 					</svg>
-				</a>
+				</Link>
 			</div>
 		</section>
 	)
