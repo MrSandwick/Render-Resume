@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Suspense, useRef, useMemo, useEffect } from 'react'
 import { Decal, useTexture, OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
+import ErrorBoundary from '../comm/ErrorBoundary.jsx'
 
 function SpinBall({ color = '#ffffff', icon, decalScale = 0.9 }) {
 	const ref = useRef()
@@ -145,9 +146,11 @@ export default function ShapeCanvas({ color = '#1f2937', icon, decalScale }) {
 			<ambientLight intensity={0.6} />
 			<directionalLight position={[3, 4, 2]} intensity={1.2} />
 
-			<Suspense fallback={null}>
-				<SpinBall color={color} icon={icon} decalScale={decalScale} />
-			</Suspense>
+			<ErrorBoundary>
+				<Suspense fallback={null}>
+					<SpinBall color={color} icon={icon} decalScale={decalScale} />
+				</Suspense>
+			</ErrorBoundary>
 
 			{/* Orbit with restricted range so users can’t go “behind” the ball */}
 			<OrbitControls

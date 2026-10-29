@@ -1,5 +1,5 @@
 // src/components/ModelViewer/BoomCanvas.jsx
-import React, { Suspense, useRef } from 'react'
+import React, { memo, Suspense, useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Html, Preload, Bounds, Center } from '@react-three/drei'
 import Boom from './bocky'
@@ -14,7 +14,7 @@ function Spinner({ speed = 0.8, clampFps = 30, children }) {
 	return <group ref={ref}>{children}</group>
 }
 
-export default function ConCanvas({ className = '' }) {
+const ConCanvas = memo(function ConCanvas({ className = '' }) {
 	const modelUrl = '/models/bocky.glb'
 	return (
 		<div className={`relative h-full w-full cursor-grab active:cursor-grabbing ${className}`}>
@@ -53,4 +53,6 @@ export default function ConCanvas({ className = '' }) {
 			</Canvas>
 		</div>
 	)
-}
+})
+
+export default ConCanvas

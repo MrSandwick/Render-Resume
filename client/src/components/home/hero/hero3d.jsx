@@ -1,5 +1,6 @@
 // src/components/home/hero/hero3d.jsx
 // tabs indentation
+import { memo, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Environment, Float } from '@react-three/drei'
 import { motion } from 'framer-motion'
@@ -11,7 +12,7 @@ import useStartWhenVisible from './hooks/useStartWhenVisible'
 import AnimatedName from './ui/animationName'
 import HackerText from './ui/hackerText'
 
-export default function Hero3D() {
+const Hero3D = memo(function Hero3D() {
 	const isMobile = useIsMobile()
 	const overlayRef = useRef(null)
 	const start = useStartWhenVisible(overlayRef) // waits until overlay is actually visible & not covered
@@ -19,12 +20,15 @@ export default function Hero3D() {
 	return (
 		<div id="hero" className="h-[80vh] relative">
 			<Canvas camera={{ position: [0, 1.2, 4], fov: 55 }}>
+				<color attach="background" args={['#000000']} />
 				<ambientLight intensity={0.6} />
 				<directionalLight position={[2, 4, 2]} intensity={1.1} />
 				<Float speed={2} rotationIntensity={0.6} floatIntensity={0.8}>
 					<Knot />
 				</Float>
-				<Environment preset="city" />
+				<Suspense fallback={null}>
+					<Environment preset="city" background={false} />
+				</Suspense>
 				<OrbitControls enablePan={false} />
 			</Canvas>
 
@@ -67,15 +71,8 @@ export default function Hero3D() {
 				</div>
 			</div>
 
-			{/* caret blink keyframes */}
-			<style>{`
-				@keyframes caretBlink {
-					0%, 45% { opacity: 1; }
-					50%, 95% { opacity: 0; }
-					100% { opacity: 1; }
-				}
-				.animate-caret { animation: caretBlink 1.1s steps(1) infinite; }
-			`}</style>
 		</div>
 	)
-}
+})
+
+export default Hero3D

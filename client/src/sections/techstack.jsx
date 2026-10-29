@@ -1,33 +1,11 @@
 // tabs indentation
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import ShapeCanvas from '../components/tech/techbadge.jsx'
 import { SPHERE_ICONS } from '../db/sphereIcons.js'
-
-function useSmallScreen(breakpointPx = 768) {
-	const [isSmall, setIsSmall] = useState(false)
-
-	useEffect(() => {
-		const mq = window.matchMedia?.(`(max-width: ${breakpointPx}px)`)
-		const update = () => setIsSmall(mq?.matches ?? window.innerWidth <= breakpointPx)
-		update()
-
-		mq?.addEventListener?.('change', update)
-		window.addEventListener('resize', update)
-		window.addEventListener('orientationchange', update)
-
-		return () => {
-			mq?.removeEventListener?.('change', update)
-			mq?.removeListener?.(update) // legacy fallback
-			window.removeEventListener('resize', update)
-			window.removeEventListener('orientationchange', update)
-		}
-	}, [breakpointPx])
-
-	return isSmall
-}
+import useIsMobile from '../lib/useIsMobile.js'
 
 export default function TechStack() {
-	const isSmall = useSmallScreen(768)
+	const isSmall = useIsMobile()
 	const iconsToRender = useMemo(
 		() => (isSmall ? SPHERE_ICONS.slice(0, 5) : SPHERE_ICONS),
 		[isSmall]

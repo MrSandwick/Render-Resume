@@ -1,34 +1,20 @@
 // src/components/TechStack.jsx
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { useSkills } from "../../lib/useSkills"
 
 export default function TechStack() {
 	const { data: list = [], error, loading } = useSkills()
 	const [selected, setSelected] = useState("All")
 
-	// Categories derived directly from API data
 	const categories = useMemo(() => {
 		const cats = new Set(list.map((t) => t.category).filter(Boolean))
 		return ["All", ...cats]
 	}, [list])
 
-	// DOM-based filter
-	const onClick = (cat) => {
-		setSelected(cat)
-		const root = document.getElementById("cards")
-		if (!root) return
-		root.setAttribute("data-category", cat)
-		for (const el of root.children) {
-			const c = el.getAttribute("data-cat")
-			const show = cat === "All" || c === cat
-			el.classList.toggle("hidden", !show)
-		}
-	}
-
-	// Ensure "All" filter is applied once content is ready
-	useEffect(() => {
-		if (!loading) onClick("All")
-	}, [loading, list.length])
+	const visible = useMemo(
+		() => (selected === "All" ? list : list.filter((t) => t.category === selected)),
+		[list, selected]
+	)
 
 	return (
 		<section id="tech" className="relative z-10 max-w-7xl mx-auto px-6 py-12">
@@ -38,7 +24,8 @@ export default function TechStack() {
 					<button
 						key={c}
 						type="button"
-						onClick={() => onClick(c)}
+						onClick={() => setSelected(c)}
+						aria-pressed={selected === c}
 						className={`px-3 py-1.5 rounded-xl border text-sm transition ${
 							selected === c
 								? "border-white/30 bg-white/10"
@@ -49,7 +36,7 @@ export default function TechStack() {
 					</button>
 				))}
 				<span className="ml-auto text-xs opacity-70">
-					{loading ? "Loading…" : `${list.length} skills`}
+					{loading ? "Loading…" : `${visible.length} skills`}
 				</span>
 			</div>
 
@@ -74,12 +61,8 @@ export default function TechStack() {
 
 			{/* Cards */}
 			{!loading && (
-				<div
-					id="cards"
-					data-category="All"
-					className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-				>
-					{list.map((t) => (
+				<div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+					{visible.map((t) => (
 						<Card
 							key={t._id || t.name}
 							name={t.name}

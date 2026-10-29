@@ -37,7 +37,7 @@ export default function Navbar() {
 					type="button"
 					className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg border border-white/15 hover:bg-white/10 text-white"
 					onClick={() => setOpen(v => !v)}
-					aria-label="Toggle menu"
+					aria-label={open ? 'Close menu' : 'Open menu'}
 					aria-expanded={open}
 				>
 					<div className="relative block w-5 h-4">

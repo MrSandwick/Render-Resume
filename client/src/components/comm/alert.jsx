@@ -39,17 +39,6 @@ export default function FloatingAlert({
 				</div>
 			</div>
 
-			<style>{`
-				@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px) } to { opacity: 1; transform: translateY(0) } }
-				.anim-fade { animation: fadeIn .18s ease-out both; }
-
-				@keyframes wiggleOnce {
-					0%,100% { transform: rotate(0deg) }
-					25% { transform: rotate(-8deg) }
-					75% { transform: rotate(8deg) }
-				}
-				.anim-wiggle-once { animation: wiggleOnce .5s ease-in-out 1; transform-origin: center; }
-			`}</style>
 		</div>,
 		document.body
 	)

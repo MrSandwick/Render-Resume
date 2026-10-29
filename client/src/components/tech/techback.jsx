@@ -1,4 +1,5 @@
 // tabs indentation
+import { memo, Suspense } from "react"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { useEffect, useMemo, useRef } from "react"
 import { Decal, useTexture } from "@react-three/drei"
@@ -72,10 +73,11 @@ function IconSphere({
 		tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping
 	}, [tex])
 
-	useFrame(() => {
+	useFrame((_, delta) => {
 		if (!ref.current) return
-		ref.current.rotation.y += spin[1]
-		ref.current.rotation.x += spin[0]
+		const d = Math.min(delta, 1 / 30) * 60
+		ref.current.rotation.y += spin[1] * d
+		ref.current.rotation.x += spin[0] * d
 	})
 
 	return (
@@ -97,7 +99,7 @@ function IconSphere({
 }
 
 /* --------------------------------- Background ------------------------------- */
-export default function Background() {
+const Background = memo(function Background() {
 	// sphere anchors around the scene
 	const items = useMemo(
 		() => [
@@ -120,24 +122,28 @@ export default function Background() {
 		<Canvas
 			style={{ position: "fixed", inset: 0, zIndex: 10, pointerEvents: "none" }}
 			camera={{ position: [0, 0, 8], fov: 50 }}
+			gl={{ alpha: true, antialias: true }}
 		>
 			<ambientLight intensity={1.1} />
 			<directionalLight position={[5, 6, 5]} intensity={1} />
 			<CameraOnScroll />
 
 			{items.map((it, i) => (
-				<IconSphere
-					key={i}
-					position={it.pos}
-					scale={it.scale}
-					spin={it.spin}
-					icon={SPHERE_ICON_SRCS[i % L]} // different icon across spheres
-					hueSeed={i}                    // stable random-ish color per sphere
-					decalScale={0.95}
-					radius={1}
-					detail={detail}                // ← low-poly here
-				/>
+				<Suspense fallback={null} key={i}>
+					<IconSphere
+						position={it.pos}
+						scale={it.scale}
+						spin={it.spin}
+						icon={SPHERE_ICON_SRCS[i % L]}
+						hueSeed={i}
+						decalScale={0.95}
+						radius={1}
+						detail={detail}
+					/>
+				</Suspense>
 			))}
 		</Canvas>
 	)
-}
+})
+
+export default Background
