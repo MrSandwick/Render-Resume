@@ -1,74 +1,74 @@
-# MyWebsite — MERN Portfolio with Three.js & Firebase
+# MyWebsite — MERN Portfolio with Three.js, self-hosted
 
 ![HERO](heroReadMe.png)
 
-An interactive personal portfolio showcasing projects, skills, and contact via a **React (Vite) + Tailwind + Three.js** frontend and an **Express API** on **Firebase Functions (v2)** with **MongoDB Atlas**.
-Includes dockerized local dev (**Dockerfiles + Docker Compose** for client, server, **MongoDB, MailHog**), Firebase Emulators, **GitHub Actions CI/CD to Firebase Hosting** (PR preview channels + production), a rate-limited SMTP contact form, and optional Cloudflare custom domain.
+An interactive personal portfolio showcasing projects, skills, and contact via a **React (Vite) + Tailwind + Three.js** frontend and an **Express API** with **MongoDB**.
+It runs on a self-hosted Kubernetes cluster at https://bturatov.me: container images are built by GitHub Actions, published to GHCR and rolled out by ArgoCD from a separate GitOps repository.
 
 ## ✨ Features
 
 - 3D interactions via **@react-three/fiber** + **drei** (GLTF models, decals, lights); **responsive layout**
-- **Projects** & **Skills** served from **Express + MongoDB Atlas (Mongoose)**
-- **Contact** endpoint with **rate limiting** and **SMTP** (Nodemailer); **MailHog** in dev
-- **Dockerized dev** with **Dockerfiles** + **Docker Compose** (client, functions, MongoDB, MailHog, optional Mongo Express)
-- **Firebase Emulators** for local parity; **Hosting rewrites** to `/api/**` (same paths for local & prod)
-- **GitHub Actions CI/CD**: install → test → build → deploy (PR previews + production)
+- **Projects** & **Skills** served from **Express + MongoDB (Mongoose)**
+- **Contact** endpoint with **rate limiting** and **SMTP** (Nodemailer); every message is stored in MongoDB before the email is sent; **MailHog** in dev
+- **Dockerized dev** with **Dockerfiles** + **Docker Compose** (client, server, MongoDB, MailHog)
+- **GitHub Actions CI/CD**: push to `main` → build web and api images → push to GHCR → bump the image tags in the GitOps repo → ArgoCD deploys
 - Test on real phones over LAN with Vite `--host`
-
 
 ## Tech Stack
 
-- **Frontend:** React 18, Vite, Tailwind CSS, Framer Motion, Three.js (@react-three/fiber, @react-three/drei)
-- **Backend:** Node 22, Express, Firebase Functions v2
-- **Database:** MongoDB Atlas (Mongoose); tools: Mongo Compass, Postman
-- **Infra & DevOps:** Firebase Hosting + Functions, **Docker** + **Docker Compose**, **Firebase Emulators**, **GitHub Actions** (CI/CD), optional 
-- **Cloudflare** DNS, optional **Mongo Express** & **MailHog** (dev)
+- **Frontend:** React, Vite, Tailwind CSS, Framer Motion, Three.js (@react-three/fiber, @react-three/drei)
+- **Backend:** Node 22, Express (ESM), Mongoose, Nodemailer
+- **Database:** MongoDB 7 (self-hosted StatefulSet)
+- **Serving:** nginx (SPA + `/api` reverse proxy), Envoy Gateway (Gateway API) with Let's Encrypt certificates from cert-manager
+- **Infra & DevOps:** Kubernetes, ArgoCD, **Docker**, **GitHub Actions** + GHCR, Prometheus alerts for the public site
 
+## How it is deployed
 
+```
+visitor ─ DNS ─ home router (port forward 80/443) ─ Envoy Gateway "public" ─ nginx (web) ─┬─ static SPA
+                                                                                          └─ /api ─ Express (api) ─ MongoDB
+```
+
+- `client/Dockerfile` builds the SPA and serves it with nginx (`client/nginx.conf`); `server/Dockerfile` runs the API. Both run as non-root with a read-only filesystem.
+- `.github/workflows/build-and-deploy.yml` builds both images on every push to `main`, tags them with the commit SHA and updates the tags in the GitOps repo (secret `GITOPS_DEPLOY_KEY`).
+- The cluster manifests live in the GitOps repository (`apps/portfolio`), not here. Secrets (database, SMTP, admin key) are created in the cluster and never committed.
+- The API reads `TRUST_PROXY` (number of proxies in front of it) so rate limiting sees the real visitor IP.
 
 ## Project Structure
 ```bash
 myweb/
 │── client/                        # React + Vite frontend
-│   ├── Dockerfile                 # client image (dev/prod)
-│   ├── .env.dev               # VITE_* samples for local dev
+│   ├── Dockerfile                 # production image: build + nginx
+│   ├── Dockerfile.dev             # dev container
+│   ├── nginx.conf                 # SPA fallback, caching, /api proxy
 │   ├── public/                    # static assets (icons, GLTF models, favicon)
-│   └── src/
-│       ├── components/            # UI, 3D canvases, overlays
-│       ├── pages/                 # route components
-│       ├── lib/                   # hooks (useProjects, useSkills), helpers
-│       └── main.jsx               # app entry
+│   └── src/                       # components, pages, hooks (useProjects, useSkills), main.jsx
 │
-│── server/                        # Express app for Firebase Functions v2
-│   ├── Dockerfile                 # functions dev container
-│   ├── package.json               # deployed via firebase.json "functions.source"
+│── server/                        # Express API
+│   ├── Dockerfile                 # production image
+│   ├── Dockerfile.dev             # dev container
+│   ├── db/                        # JSON exports of projects and skills (mongoimport)
 │   └── src/
-│       ├── env.js                 # env mapping/validation
+│       ├── env.js                 # env mapping
 │       ├── db.js                  # Mongo connection (Mongoose)
-│       ├── routes/
-│       │   ├── projects.js        # GET /api/projects
-│       │   ├── skills.js          # GET /api/skills
-│       │   └── contact.js         # POST /api/contact (rate-limited)
+│       ├── models/                # Project, Skill, Message
+│       ├── routes/                # projects, skills, contact
 │       ├── utils/mailer.js        # Nodemailer SMTP
-│       └── index.js               # express -> onRequest handler
+│       └── index.js               # express app
 │
-│── .github/
-│   └── workflows/
-│       └── firebase.yml           # GitHub Actions: build/test + Firebase deploy (previews/prod)
+│── .github/workflows/
+│   └── build-and-deploy.yml       # build images, push to GHCR, bump tags in the GitOps repo
 │
-│── docker-compose.yml             # client, functions, MongoDB, MailHog, optional Mongo Express
-│── .dockerignore                  # ignore node_modules, build artifacts, secrets
-│── firebase.json                  # Hosting rewrites, Emulators, Functions source
-│── .firebaserc                    # Firebase project aliases
-│── package.json                   # workspace/root scripts (optional)
-│── README.md                      # project docs (this file)
+│── docker-compose.dev.yml         # client, server, MongoDB, MailHog for local development
+│── README.md
 ```
 
 ## Key Notes
 
-- Do not call app.listen(...) in Functions v2; the platform binds ports for emulators and prod.
 - For mobile performance in Three.js, reduce shadows/polycount and use dpr={[1,2]}.
 - Many GLTF models ship with transforms; center and scale once using Box3 utilities.
+- To load the project and skill data into an empty database:
+  `mongoimport --db <db> --collection skills --jsonArray --file server/db/R\&R.skills.json` and the same for `projects.json`.
 
 ## Installation & Usage
 
