@@ -1,0 +1,62 @@
+name: build-and-deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: web
+            context: client
+          - name: api
+            context: server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          tags: ghcr.io/mrsandwick/render-resume-${{ matrix.name }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out homelab-gitops
+        uses: actions/checkout@v4
+        with:
+          repository: MrSandwick/homelab-gitops
+          ssh-key: ${{ secrets.GITOPS_DEPLOY_KEY }}
+          path: gitops
+
+      - name: Update image tags in homelab-gitops
+        run: |
+          cd gitops
+          sed -i "s|image: ghcr.io/mrsandwick/render-resume-web:.*|image: ghcr.io/mrsandwick/render-resume-web:${{ github.sha }}|" apps/portfolio/web.yaml
+          sed -i "s|image: ghcr.io/mrsandwick/render-resume-api:.*|image: ghcr.io/mrsandwick/render-resume-api:${{ github.sha }}|" apps/portfolio/api.yaml
+          grep -q "render-resume-web:${{ github.sha }}" apps/portfolio/web.yaml
+          grep -q "render-resume-api:${{ github.sha }}" apps/portfolio/api.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "portfolio: deploy ${{ github.sha }}"
+          git push
