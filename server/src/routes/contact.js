@@ -2,6 +2,7 @@
 import { Router } from 'express'
 import rateLimit from 'express-rate-limit'
 import { sendEmail } from '../utils/mailer.js'
+import Message from '../models/Message.js'
 
 const router = Router()
 
@@ -37,12 +38,25 @@ router.post('/', contactLimiter, async (req, res) => {
 	if (subject && String(subject).length > 200) {
 		return res.status(400).json({ ok: false, message: 'Subject too long' })
 	}
+	if (String(message).length > 5000) {
+		return res.status(400).json({ ok: false, message: 'Message too long' })
+	}
+
+	// store first: the message must survive an SMTP failure
+	let doc = null
+	try {
+		doc = await Message.create({ name, email, subject, message })
+	} catch (err) {
+		console.error('save message error:', err)
+	}
 
 	try {
 		const { messageId } = await sendEmail({ name, email, subject, message })
+		if (doc) await Message.updateOne({ _id: doc._id }, { emailed: true }).catch(() => {})
 		return res.status(200).json({ ok: true, message: 'Message sent', id: messageId })
 	} catch (err) {
 		console.error('sendEmail error:', err)
+		if (doc) return res.status(200).json({ ok: true, message: 'Message received' })
 		return res.status(502).json({ ok: false, message: 'Failed to send' })
 	}
 })

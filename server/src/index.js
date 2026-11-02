@@ -4,7 +4,6 @@ import express from 'express'
 import helmet from 'helmet'
 import cors from 'cors'
 import rateLimit from 'express-rate-limit'
-import { onRequest } from 'firebase-functions/v2/https'
 
 import { connectDB } from './db.js'
 import { env } from './env.js'
@@ -28,7 +27,8 @@ function ensureDB() {
 }
 
 // --- hardening & basics ---
-app.set('trust proxy', 1)
+// hops between the visitor and this process (Cloudflare -> Envoy -> nginx = 3); set TRUST_PROXY in the deployment
+app.set('trust proxy', env.trustProxy)
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'same-site' } }))
 const allowed = (env.origin || '').split(',').map(s => s.trim()).filter(Boolean)
 app.use(cors({ origin: allowed.length ? allowed : undefined, credentials: false }))
@@ -40,16 +40,16 @@ app.use(rateLimit({
 	legacyHeaders: false, 
 	}))
 
-// --- gate all routes until DB is ready ---
+// --- health (before the DB gate: a liveness probe must not depend on Mongo) ---
+app.get('/health', (_req, res) => res.json({ ok: true, env: env.nodeEnv }))
+app.get('/api/health', (_req, res) => res.json({ ok: true, env: env.nodeEnv }))
+
+// --- gate all other routes until DB is ready ---
 app.use(async (_req, _res, next) => {
 	try { await ensureDB(); next() } catch (e) { next(e) }
 })
 
-// --- health ---
-app.get('/health', (_req, res) => res.json({ ok: true, env: env.nodeEnv }))
-app.get('/api/health', (_req, res) => res.json({ ok: true, env: env.nodeEnv }))
-
-// --- routes (keep /api prefix: Hosting rewrites /api/** -> function) ---
+// --- routes (keep the /api prefix: nginx proxies /api/** to this service) ---
 app.use('/api/projects', projectsRouter)
 app.use('/api/skills', skillsRouter)
 app.use('/api/contact', contactRouter)
@@ -61,10 +61,6 @@ app.use((err, _req, res, _next) => {
 	res.status(500).json({ ok: false, message: 'Internal server error' })
 })
 
-// ❗ app.listen for local dev
 app.listen(env.port, () => {
-	console.log(`✓ API on http://localhost:${env.port}`)
+	console.log(`✓ API listening on :${env.port}`)
 })
-
-// ❗ no app.listen in Cloud Functions
-// export const server = onRequest({ region: 'us-central1' }, app)

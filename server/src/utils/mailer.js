@@ -17,6 +17,10 @@ transporter.verify()
 	.then(() => console.log('✓ SMTP ready'))
 	.catch(err => console.warn('✗ SMTP verify failed:', err?.message))
 
+const escapeHtml = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => (
+	{ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+))
+
 /**
  * Send contact message to your inbox.
  * - Delivers to MAIL_TO (from env), sets visitor email as Reply-To
@@ -30,10 +34,10 @@ export async function sendEmail({ name = 'Visitor', email, subject = 'New contac
 		text: String(message || ''),
 		html: `
 			<div style="font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5">
-				<p><strong>Name:</strong> ${name || '—'}</p>
-				<p><strong>Email:</strong> ${email || '—'}</p>
+				<p><strong>Name:</strong> ${escapeHtml(name) || '—'}</p>
+				<p><strong>Email:</strong> ${escapeHtml(email) || '—'}</p>
 				<hr style="border:none;border-top:1px solid #e5e7eb;margin:12px 0">
-				<pre style="white-space:pre-wrap;margin:0">${String(message || '')}</pre>
+				<pre style="white-space:pre-wrap;margin:0">${escapeHtml(message)}</pre>
 			</div>
 		`,
 	})
