@@ -12,10 +12,3 @@ client/.vite
 # Server
 server/node_modules
 server/dist
-
-# Firebase / misc
-.firebase
-.firebaserc
-firebase.json
-storage.rules
-firestore.rules
